@@ -40,6 +40,7 @@ long_description = ("TADA: phylogenetic augmentation of microbiome samples enhan
 setup(name='q2-feature-engineering',
       version=__version__,
       long_description=long_description,
+      license='BSD-3-Clause',
       description='Qiime2 plugin to facilitate feature extraction for metagenomic analyses.',
       python_requires='>={}.{}'.format(*REQUIRED_PYTHON),
       author = 'Erfan Sayyari, Ban Kawas, Siavash Mirarab',
