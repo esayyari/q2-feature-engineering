@@ -8,7 +8,7 @@ import biom
 import tempfile
 from .datasets import make_data_frame
 import shutil
-
+import qiime2
 def _sort_metada(targets_metadata, biom_table):
     targets = targets_metadata.to_dataframe()
 
@@ -27,7 +27,7 @@ def _read_inputs(biom_table: biom.Table, phylogeny_fp: Str, meta_data: Categoric
         samples = meta.index
     else:
         generate_strategy = "augmentation"
-        y = pd.Series(data=np.ones((len(biom_table.ids('sample')), 1)), index=biom_table.ids('sample'))
+        y = pd.Series(data=np.ones((len(biom_table.ids('sample')),)), index=biom_table.ids('sample'))
         samples = biom_table.ids('sample')
 
     _table = biom_table.sort_order(axis='sample', order=samples)
@@ -42,14 +42,19 @@ def _read_inputs(biom_table: biom.Table, phylogeny_fp: Str, meta_data: Categoric
 
 
 
-def tada(phylogeny: NewickFormat, otu_table: biom.Table, meta_data: CategoricalMetadataColumn = None,
+def tada(phylogeny: NewickFormat, otu_table: biom.Table, meta_data: Metadata = None,
          seed_num: Int = 0, xgen: Int = 0, n_beta: Int = 1, n_binom: Int = 5, var_method: Str = 'br_penalized',
          stat_method: Str = 'binom', prior_weight: Float = 0, coef: Float = 200, exponent: Float = 0.5,
          pseudo_branch_length: Float = 1e-6, pseudo_cnt: Float = 5,
-         normalized: Bool = False, output_log_fp: Str = None) -> (biom.Table, biom.Table, pd.Series, pd.Series):
+         normalized: Bool = False, output_log_fp: Str = None,
+         augmented_meta: Metadata = None, original_meta: Metadata=None) -> (biom.Table, biom.Table):
     _table, y, _phylogeny, generate_strategy = _read_inputs(biom_table=otu_table,
                                                             phylogeny_fp=str(phylogeny),
                                                             meta_data=meta_data)
+    if generate_strategy is 'balancing' and (augmented_meta is None or original_meta is None):
+        raise ValueError(
+            "Expected a path to write out the generated and original labels and metadata!"
+        )
     with tempfile.TemporaryDirectory() as tmp:
         sG = SampleGenerator(seed_num=seed_num, logger=None, generate_strategy=generate_strategy, tmp_dir=tmp,
                              xgen=xgen, n_beta=n_beta, n_binom=n_binom, var_method=var_method, stat_method=stat_method,
@@ -60,9 +65,19 @@ def tada(phylogeny: NewickFormat, otu_table: biom.Table, meta_data: CategoricalM
         if np.sum(orig_biom.matrix_data - otu_table.matrix_data) > 1e-20:
             raise ValueError(
                 "The original biom table doesn't match the output of generator function! Please double check")
-        orig_pd, augm_pd = make_data_frame(orig_biom, augm_biom, orig_labels, augm_labels)
+        if generate_strategy is 'balancing':
+            orig_pd, augm_pd = make_data_frame(orig_biom, augm_biom, orig_labels, augm_labels)
+            if not os.path.exists(os.path.dirname(str(original_meta))):
+                os.mkdir(os.path.dirname(str(original_meta)))
+            orig_meta = qiime2.Metadata(orig_pd)
+            augm_meta = qiime2.Metadata(augm_pd)
+            orig_meta.save(original_meta)
+            augm_meta.save(augmented_meta)
 
-    if output_log_fp is not None:
-        shutil.copyfile(sG.log_fp, output_log_fp)
+        if output_log_fp is not None:
+            if not os.path.exists(os.path.dirname(output_log_fp)):
+                os.mkdir(os.path.dirname(output_log_fp))
+            shutil.copyfile(sG.log_fp, output_log_fp)
 
-    return orig_biom, augm_biom, orig_pd, augm_pd
+
+    return orig_biom, augm_biom

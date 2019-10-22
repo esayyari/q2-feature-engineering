@@ -38,8 +38,12 @@ def read_table_and_labels(biom_fp, meta_fp, tree_fp):
 
 
 def make_data_frame(orig_biom, augm_biom, orig_labels, augm_labels):
-    orig_pd = pd.Series(np.asarray(orig_labels), index=orig_biom.ids('sample'))
-    augm_pd = pd.Series(np.asarray(augm_labels), index=augm_biom.ids('sample'))
+    orig_pd = pd.DataFrame(np.asarray(orig_labels), index=orig_biom.ids('sample'))
+    orig_pd.index.names = ['#SampleID']
+    orig_pd.columns = ['label']
+    augm_pd = pd.DataFrame(np.asarray(augm_labels), index=augm_biom.ids('sample'))
+    augm_pd.index.names = ['#SampleID']
+    augm_pd.columns = ['label']
     return orig_pd, augm_pd
 
 
@@ -49,5 +53,5 @@ def write_biom_and_meta_data(orig_biom, orig_pd, augm_biom, augm_pd, out_dir, bi
     with biom_open(out_dir + '/augmented_data.biom', 'w') as f:
         augm_biom.to_hdf5(f, "augmented biom table")
     if meta_fp is not None:
-        orig_pd.to_csv(out_dir + '/' + os.path.basename(meta_fp), sep='\t', header=False, index=False)
-        augm_pd.to_csv(out_dir + '/augmented_meta_data.csv', sep='\t', header=False, index=False)
+        orig_pd.to_csv(out_dir + '/' + os.path.basename(meta_fp), sep='\t', header=['#SampleID', 'label'])
+        augm_pd.to_csv(out_dir + '/augmented_meta_data.csv', sep='\t', header=['#SampleID', 'label'])

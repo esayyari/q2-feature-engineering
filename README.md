@@ -45,13 +45,12 @@ This will install Qiime2 plugin as well as standalone TADA package for you. You 
 ```
 # Update Qiime package
 qiime dev refresh-cache
+
 # See intputs to TADA
 qiime feature-engineering tada --help
-```
 
-This should show you the following message
 
-```
+
 Usage: qiime feature-engineering tada [OPTIONS]
 
   Generate microbiome samples with respect to the phylogeny structure.
@@ -118,17 +117,17 @@ Parameters:
   --p-output-log-fp TEXT  If you want to write the log file of TADA, please
                           specify a path. The default option is None.
                                                                     [optional]
+  --p-augmented-meta TEXT The metadata file path corresponding to generated
+                          samples. This is required when using TADA for
+                          balancing. Default is None                [optional]
+  --p-original-meta TEXT  The metadata file path corresponding to original
+                          samples. This is required when using TADA for
+                          balancing. Default is None                [optional]
 Outputs:
   --o-orig-biom ARTIFACT FeatureTable[Frequency]
                           Original samples stored in a biom table   [required]
   --o-augmented-biom ARTIFACT FeatureTable[Frequency]
                           Generated samples stored in a biom table  [required]
-  --o-original-meta ARTIFACT SampleData[ClassifierPredictions]
-                          The metadata corresponding to original samples.
-                                                                    [required]
-  --o-augmented-meta ARTIFACT SampleData[ClassifierPredictions]
-                          The metadata corresponding to generated samples.
-                                                                    [required]
 Miscellaneous:
   --output-dir PATH       Output unspecified results to a directory
   --verbose / --quiet     Display verbose output to stdout and/or stderr
@@ -180,14 +179,10 @@ qiime feature-engineering tada --i-phylogeny phylogeny.qza \
 							   --i-otu-table feature-table.qza \
 							   --o-orig-biom outputs_binom/original-feature-table.qza \
 							   --o-augmented-biom outputs_binom/augmented-feature-table.qza \
-							   --o-original-meta outputs_binom/original-metadata.csv \
-							   --o-augmented-meta outputs_binom/augmented-metadata.csv \
 							   --p-output-log-fp outputs_binom/logfile.log
 ```
 
-Please note that, although we don't pass any metadata, code will generate **dummy** metadata files, and so it asks for the output path. 
-
-Also, using the above code, the output files 
+Using the above code, the output files 
 
 * `outputs_binom/logfile.log`
 * `outputs_binom/augmented-feature-table.qza`
@@ -206,9 +201,7 @@ qiime feature-engineering tada --i-phylogeny phylogeny.qza \
 							   --i-otu-table feature-table.qza \
 							   --o-orig-biom outputs_beta_binom/original-feature-table.qza \
 							   --o-augmented-biom outputs_beta_binom/augmented-feature-table.qza \
-							   --o-original-meta outputs_beta_binom/original-metadata.csv \
-							   --o-augmented-meta outputs_beta_binom/augmented-metadata.csv \
-							   --p-output-log-fp outputs_beta_binom/logfile.log
+							   --p-output-log-fp outputs_beta_binom/logfile.log \
 							   --p-stat-method beta_binom
 ```
 
@@ -225,18 +218,18 @@ should match
 respectively.
 
 ### Using TADA for balancing datasets
-In microbiome samples, the distribution of class labels (or cluster labels for unsupervised learning) is often unbalanced. This can cause overfitting and poor generalization of the machine learning method on new samples. You can use TADA to generate new samples for the underrepresented classes to make classes the same size. Using our example files `phylogeny.qza`, `feature-table.qza`, `metadata.qza`, and using labels in column `label` you can generate new samples to balance out datasets using 
+In microbiome samples, the distribution of class labels (or cluster labels for unsupervised learning) is often unbalanced. This can cause overfitting and poor generalization of the machine learning method on new samples. You can use TADA to generate new samples for the underrepresented classes to make classes the same size. Using our example files `phylogeny.qza`, `feature-table.qza`, `metadata.csv`, and using labels in column `label` you can generate new samples to balance out datasets using 
 
 ```
 mkdir outputs_binom_balancing
-qiime feature-engineering tada tada --i-phylogeny phylogeny.qza \
+qiime feature-engineering tada --i-phylogeny phylogeny.qza \
 							   --i-otu-table feature-table.qza \
 							   --m-meta-data-file metadata.csv \
 							   --m-meta-data-column label \
 							   --o-orig-biom outputs_binom_balancing/original-feature-table.qza \
 							   --o-augmented-biom outputs_binom_balancing/augmented-feature-table.qza \
-							   --o-original-meta outputs_binom_balancing/original-metadata.csv \
-							   --o-augmented-meta outputs_binom_balancing/augmented-metadata.csv \
+							   --p-original-meta outputs_binom_balancing/original-metadata.csv \
+							   --p-augmented-meta outputs_binom_balancing/augmented-metadata.csv \
 							   --p-output-log-fp outputs_binom_balancing/logfile.log
 ```
 
@@ -275,8 +268,8 @@ qiime feature-engineering tada --i-phylogeny phylogeny.qza \
 							   --m-meta-data-column label \
 							   --o-orig-biom outputs_beta_binom_balancing/original-feature-table.qza \
 							   --o-augmented-biom outputs_beta_binom_balancing/augmented-feature-table.qza \
-							   --o-original-meta outputs_beta_binom_balancing/original-metadata.csv \
-							   --o-augmented-meta outputs_beta_binom_balancing/augmented-metadata.csv \
+							   --p-original-meta outputs_beta_binom_balancing/original-metadata.csv \
+							   --p-augmented-meta outputs_beta_binom_balancing/augmented-metadata.csv \
 							   --p-output-log-fp outputs_beta_binom_balancing/logfile.log \
 							   --p-stat-method beta_binom
 ```
@@ -304,15 +297,16 @@ The above command will generate enough number of samples for the least size clus
 ```
 mkdir outputs_beta_binom_balancing_5x
 qiime feature-engineering tada --i-phylogeny phylogeny.qza \
-							   --i-otu-table feature-table.qza \							   --m-meta-data-file metadata.csv \
+							   --i-otu-table feature-table.qza \
+							   --m-meta-data-file metadata.csv \
 							   --m-meta-data-column label \
 							   --o-orig-biom outputs_beta_binom_balancing_5x/original-feature-table.qza \
 							   --o-augmented-biom outputs_beta_binom_balancing_5x/augmented-feature-table.qza \
-							   --o-original-meta outputs_beta_binom_balancing_5x/original-metadata.csv \
-							   --o-augmented-meta outputs_beta_binom_balancing_5x/augmented-metadata.csv \
+							   --p-original-meta outputs_beta_binom_balancing_5x/original-metadata.csv \
+							   --p-augmented-meta outputs_beta_binom_balancing_5x/augmented-metadata.csv \
 							   --p-output-log-fp outputs_beta_binom_balancing_5x/logfile.log \
 							   --p-stat-method beta_binom \
-							   ---p-xgen 5
+							   --p-xgen 5
 ```
 
 The outpus are similar to what described above. Please note that in the augmented meta data file, there are `110` samples with class `1` and `100` samples with class 0. Overal, you will have `120` samples for both classes. Also, the output files

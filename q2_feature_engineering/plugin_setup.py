@@ -1,11 +1,11 @@
-from qiime2.plugin import (Plugin, Str, Int, Bool, Float, Citations, MetadataColumn, Numeric)
+from qiime2.plugin import (Plugin, Str, Int, Bool, Float, Citations, MetadataColumn, Metadata, Numeric)
 from q2_types.feature_table import (FeatureTable, Frequency)
 from q2_types.tree import Phylogeny, Rooted
 from q2_types.sample_data import SampleData
 import re
 import ast
 import os
-from q2_sample_classifier._type import (ClassifierPredictions)
+from q2_sample_classifier._type import (ClassifierPredictions, Probabilities)
 
 from ._tada import tada
 
@@ -69,7 +69,11 @@ _parameter_descriptions = {"seed_num": "Seed number. The default value is 0.",
                            "normalized": "If set to 1, the OTU counts will be normalized to add up to "
                                          "one. The default option is 0.",
                            "output_log_fp": "If you want to write the log file of TADA, please specify a path. "
-                                            "The default option is None."}
+                                            "The default option is None.",
+                           'original_meta': "The metadata file path corresponding to original samples. "
+                                            "This is required when using TADA for balancing. Default is None",
+                           'augmented_meta': "The metadata file path corresponding to generated samples. "
+                                             "This is required when using TADA for balancing. Default is None"}
 _parameters = {'seed_num': Int,
                'meta_data': MetadataColumn[Numeric],
                'xgen': Int,
@@ -83,7 +87,10 @@ _parameters = {'seed_num': Int,
                'pseudo_branch_length': Float,
                'pseudo_cnt': Int,
                'normalized': Bool,
-               'output_log_fp': Str}
+               'output_log_fp': Str,
+               'original_meta': Str,
+               'augmented_meta': Str
+               }
 
 _inputs = {'phylogeny': Phylogeny[Rooted],
            'otu_table': FeatureTable[Frequency]}
@@ -92,14 +99,10 @@ _input_descriptions = {"phylogeny": "Phylogeny file in newick format",
                        "otu_table": "The count table. This should be in Qiime2 FeatureTable artifact"}
 
 _outputs = [('orig_biom', FeatureTable[Frequency]),
-            ('augmented_biom', FeatureTable[Frequency]),
-            ('original_meta', SampleData[ClassifierPredictions]),
-            ('augmented_meta', SampleData[ClassifierPredictions])]
+            ('augmented_biom', FeatureTable[Frequency])]
 
 _output_descriptions = {'orig_biom': "Original samples stored in a biom table",
-                        'augmented_biom': "Generated samples stored in a biom table",
-                        'original_meta': "The metadata corresponding to original samples.",
-                        'augmented_meta': "The metadata corresponding to generated samples."}
+                        'augmented_biom': "Generated samples stored in a biom table"}
 
 plugin.methods.register_function(
     function=tada,

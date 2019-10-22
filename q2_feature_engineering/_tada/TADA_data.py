@@ -30,6 +30,7 @@ class Data():
 			self.logger_ins = logger
 		else:
 			self.log_fp = tempfile.mktemp(dir=tmp_dir, prefix='logfile.log')
+			print(self.log_fp)
 			log = LOG(self.log_fp)
 			self.logger_ins = log.get_logger('generator')
 
