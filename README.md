@@ -176,10 +176,10 @@ The training data size has a tremendous effect on the machine learning method pe
 ```
 mkdir outputs_binom
 qiime feature-engineering tada --i-phylogeny phylogeny.qza \
---i-otu-table feature-table.qza \
---o-orig-biom outputs_binom/original-feature-table.qza \
---o-augmented-biom outputs_binom/augmented-feature-table.qza \
---p-output-log-fp outputs_binom/logfile.log
+                               --i-otu-table feature-table.qza \
+                               --o-orig-biom outputs_binom/original-feature-table.qza \
+                               --o-augmented-biom outputs_binom/augmented-feature-table.qza \
+                               --p-output-log-fp outputs_binom/logfile.log
 ```
 
 Using the above code, the output files 
