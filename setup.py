@@ -1,5 +1,5 @@
 # ----------------------------------------------------------------------------
-# Copyright (c) 2016-2019, QIIME 2 development team.
+# Copyright (c) 2019, QIIME 2 development team.
 #
 # Distributed under the terms of the Modified BSD License.
 #
@@ -67,7 +67,7 @@ setup(name='q2-feature-engineering',
       classifiers=["Environment :: Console",
                      "Intended Audience :: Developers",
                      "Intended Audience :: Science/Research",
-                     ("License :: OSI Approved :: Berkeley Source Distribution"
+                     ("License :: OSI approved:: Berkeley Source Distribution"
                      "License (BSD)"),
                      "Natural Language :: English",
                      "Operating System :: POSIX :: Linux",
