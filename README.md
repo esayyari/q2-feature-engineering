@@ -176,10 +176,10 @@ The training data size has a tremendous effect on the machine learning method pe
 ```
 mkdir outputs_binom
 qiime feature-engineering tada --i-phylogeny phylogeny.qza \
---i-otu-table feature-table.qza \
---o-orig-biom outputs_binom/original-feature-table.qza \
---o-augmented-biom outputs_binom/augmented-feature-table.qza \
---p-output-log-fp outputs_binom/logfile.log
+                               --i-otu-table feature-table.qza \
+                               --o-orig-biom outputs_binom/original-feature-table.qza \
+                               --o-augmented-biom outputs_binom/augmented-feature-table.qza \
+                               --p-output-log-fp outputs_binom/logfile.log
 ```
 
 Using the above code, the output files 
@@ -198,11 +198,11 @@ respectively. If you wish to use beta binomial generative model to generate new 
 ```
 mkdir outputs_beta_binom
 qiime feature-engineering tada --i-phylogeny phylogeny.qza \
---i-otu-table feature-table.qza \
---o-orig-biom outputs_beta_binom/original-feature-table.qza \
---o-augmented-biom outputs_beta_binom/augmented-feature-table.qza \
---p-output-log-fp outputs_beta_binom/logfile.log \
---p-stat-method beta_binom
+                               --i-otu-table feature-table.qza \
+                               --o-orig-biom outputs_beta_binom/original-feature-table.qza \
+                               --o-augmented-biom outputs_beta_binom/augmented-feature-table.qza \
+                               --p-output-log-fp outputs_beta_binom/logfile.log \
+                               --p-stat-method beta_binom
 ```
 
 Files 
@@ -223,14 +223,14 @@ In microbiome samples, the distribution of class labels (or cluster labels for u
 ```
 mkdir outputs_binom_balancing
 qiime feature-engineering tada --i-phylogeny phylogeny.qza \
---i-otu-table feature-table.qza \
---m-meta-data-file metadata.csv \
---m-meta-data-column label \
---o-orig-biom outputs_binom_balancing/original-feature-table.qza \
---o-augmented-biom outputs_binom_balancing/augmented-feature-table.qza \
---p-original-meta outputs_binom_balancing/original-metadata.csv \
---p-augmented-meta outputs_binom_balancing/augmented-metadata.csv \
---p-output-log-fp outputs_binom_balancing/logfile.log
+                               --i-otu-table feature-table.qza \
+                               --m-meta-data-file metadata.csv \
+                               --m-meta-data-column label \
+                               --o-orig-biom outputs_binom_balancing/original-feature-table.qza \
+                               --o-augmented-biom outputs_binom_balancing/augmented-feature-table.qza \
+                               --p-original-meta outputs_binom_balancing/original-metadata.csv \
+                               --p-augmented-meta outputs_binom_balancing/augmented-metadata.csv \
+                               --p-output-log-fp outputs_binom_balancing/logfile.log
 ```
 
 
@@ -263,15 +263,15 @@ If you wish to use the Beta-Binomial generative model, you can use the following
 ```
 mkdir outputs_beta_binom_balancing
 qiime feature-engineering tada --i-phylogeny phylogeny.qza \
---i-otu-table feature-table.qza \
---m-meta-data-file metadata.csv \
---m-meta-data-column label \
---o-orig-biom outputs_beta_binom_balancing/original-feature-table.qza \
---o-augmented-biom outputs_beta_binom_balancing/augmented-feature-table.qza \
---p-original-meta outputs_beta_binom_balancing/original-metadata.csv \
---p-augmented-meta outputs_beta_binom_balancing/augmented-metadata.csv \
---p-output-log-fp outputs_beta_binom_balancing/logfile.log \
- --p-stat-method beta_binom
+                               --i-otu-table feature-table.qza \
+                               --m-meta-data-file metadata.csv \
+                               --m-meta-data-column label \
+                               --o-orig-biom outputs_beta_binom_balancing/original-feature-table.qza \
+                               --o-augmented-biom outputs_beta_binom_balancing/augmented-feature-table.qza \
+                               --p-original-meta outputs_beta_binom_balancing/original-metadata.csv \
+                               --p-augmented-meta outputs_beta_binom_balancing/augmented-metadata.csv \
+                               --p-output-log-fp outputs_beta_binom_balancing/logfile.log \
+                               --p-stat-method beta_binom
 ```
 
 
@@ -297,16 +297,16 @@ The above command will generate enough number of samples for the least size clus
 ```
 mkdir outputs_beta_binom_balancing_5x
 qiime feature-engineering tada --i-phylogeny phylogeny.qza \
---i-otu-table feature-table.qza \
---m-meta-data-file metadata.csv \
---m-meta-data-column label \
---o-orig-biom outputs_beta_binom_balancing_5x/original-feature-table.qza \
---o-augmented-biom outputs_beta_binom_balancing_5x/augmented-feature-table.qza \
---p-original-meta outputs_beta_binom_balancing_5x/original-metadata.csv \
---p-augmented-meta outputs_beta_binom_balancing_5x/augmented-metadata.csv \
---p-output-log-fp outputs_beta_binom_balancing_5x/logfile.log \
---p-stat-method beta_binom \
---p-xgen 5
+                               --i-otu-table feature-table.qza \
+                               --m-meta-data-file metadata.csv \
+                               --m-meta-data-column label \
+                               --o-orig-biom outputs_beta_binom_balancing_5x/original-feature-table.qza \
+                               --o-augmented-biom outputs_beta_binom_balancing_5x/augmented-feature-table.qza \
+                               --p-original-meta outputs_beta_binom_balancing_5x/original-metadata.csv \
+                               --p-augmented-meta outputs_beta_binom_balancing_5x/augmented-metadata.csv \
+                               --p-output-log-fp outputs_beta_binom_balancing_5x/logfile.log \
+                               --p-stat-method beta_binom \
+                               --p-xgen 5
 ```
 
 The outpus are similar to what described above. Please note that in the augmented meta data file, there are `110` samples with class `1` and `100` samples with class 0. Overal, you will have `120` samples for both classes. Also, the output files
