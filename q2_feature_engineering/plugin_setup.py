@@ -9,12 +9,9 @@
 from qiime2.plugin import (Plugin, Str, Int, Bool, Float, Citations, MetadataColumn, Metadata, Numeric)
 from q2_types.feature_table import (FeatureTable, Frequency)
 from q2_types.tree import Phylogeny, Rooted
-from q2_types.sample_data import SampleData
 import re
 import ast
 import os
-from q2_sample_classifier._type import (ClassifierPredictions, Probabilities)
-
 from ._tada import tada
 
 citations = Citations.load('citations.bib', package='q2_feature_engineering')
@@ -81,7 +78,10 @@ _parameter_descriptions = {"seed_num": "Seed number. The default value is 0.",
                            'original_meta': "The metadata file path corresponding to original samples. "
                                             "This is required when using TADA for balancing. Default is None",
                            'augmented_meta': "The metadata file path corresponding to generated samples. "
-                                             "This is required when using TADA for balancing. Default is None"}
+                                             "This is required when using TADA for balancing. Default is None",
+                           'concatenate_meta': "The metadata file path corresponding to the concatenation of "
+                                          "generated and original samples. This is required when using TADA for"
+                                          "balancing. Default is None"}
 _parameters = {'seed_num': Int,
                'meta_data': MetadataColumn[Numeric],
                'xgen': Int,
@@ -97,7 +97,8 @@ _parameters = {'seed_num': Int,
                'normalized': Bool,
                'output_log_fp': Str,
                'original_meta': Str,
-               'augmented_meta': Str
+               'augmented_meta': Str,
+               'concatenate_meta': Str
                }
 
 _inputs = {'phylogeny': Phylogeny[Rooted],
@@ -107,10 +108,12 @@ _input_descriptions = {"phylogeny": "Phylogeny file in newick format",
                        "otu_table": "The count table. This should be in Qiime2 FeatureTable artifact"}
 
 _outputs = [('orig_biom', FeatureTable[Frequency]),
-            ('augmented_biom', FeatureTable[Frequency])]
+            ('augmented_biom', FeatureTable[Frequency]),
+            ('concatenated_biom', FeatureTable[Frequency])]
 
 _output_descriptions = {'orig_biom': "Original samples stored in a biom table",
-                        'augmented_biom': "Generated samples stored in a biom table"}
+                        'augmented_biom': "Generated samples stored in a biom table",
+                        'concatenated_biom': "The Concatenation of generated and original biom tables"}
 
 plugin.methods.register_function(
     function=tada,

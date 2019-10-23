@@ -179,6 +179,7 @@ qiime feature-engineering tada --i-phylogeny phylogeny.qza \
                                --i-otu-table feature-table.qza \
                                --o-orig-biom outputs_binom/original-feature-table.qza \
                                --o-augmented-biom outputs_binom/augmented-feature-table.qza \
+                               --o-concatenated-biom outputs_binom/concatenated-feature-table.qza \
                                --p-output-log-fp outputs_binom/logfile.log
 ```
 
@@ -201,6 +202,7 @@ qiime feature-engineering tada --i-phylogeny phylogeny.qza \
                                --i-otu-table feature-table.qza \
                                --o-orig-biom outputs_beta_binom/original-feature-table.qza \
                                --o-augmented-biom outputs_beta_binom/augmented-feature-table.qza \
+                               --o-concatenated-biom outputs_beta_binom/concatenated-feature-table.qza \
                                --p-output-log-fp outputs_beta_binom/logfile.log \
                                --p-stat-method beta_binom
 ```
@@ -228,8 +230,10 @@ qiime feature-engineering tada --i-phylogeny phylogeny.qza \
                                --m-meta-data-column label \
                                --o-orig-biom outputs_binom_balancing/original-feature-table.qza \
                                --o-augmented-biom outputs_binom_balancing/augmented-feature-table.qza \
+                               --o-concatenated-biom outputs_binom_balancing/concatenated-feature-table.qza \
                                --p-original-meta outputs_binom_balancing/original-metadata.csv \
                                --p-augmented-meta outputs_binom_balancing/augmented-metadata.csv \
+                               --p-concatenate-meta outputs_binom_balancing/concatenated-metadata.csv \
                                --p-output-log-fp outputs_binom_balancing/logfile.log
 ```
 
@@ -268,8 +272,10 @@ qiime feature-engineering tada --i-phylogeny phylogeny.qza \
                                --m-meta-data-column label \
                                --o-orig-biom outputs_beta_binom_balancing/original-feature-table.qza \
                                --o-augmented-biom outputs_beta_binom_balancing/augmented-feature-table.qza \
+                               --o-concatenated-biom outputs_beta_binom_balancing/concatenated-feature-table.qza \
                                --p-original-meta outputs_beta_binom_balancing/original-metadata.csv \
                                --p-augmented-meta outputs_beta_binom_balancing/augmented-metadata.csv \
+                               --p-concatenate-meta outputs_beta_binom_balancing/concatenated-metadata.csv \
                                --p-output-log-fp outputs_beta_binom_balancing/logfile.log \
                                --p-stat-method beta_binom
 ```
@@ -302,8 +308,10 @@ qiime feature-engineering tada --i-phylogeny phylogeny.qza \
                                --m-meta-data-column label \
                                --o-orig-biom outputs_beta_binom_balancing_5x/original-feature-table.qza \
                                --o-augmented-biom outputs_beta_binom_balancing_5x/augmented-feature-table.qza \
+                               --o-concatenated-biom outputs_beta_binom_balancing_5x/concatenated-feature-table.qza \
                                --p-original-meta outputs_beta_binom_balancing_5x/original-metadata.csv \
                                --p-augmented-meta outputs_beta_binom_balancing_5x/augmented-metadata.csv \
+                               --p-concatenate-meta outputs_beta_binom_balancing_5x/concatenated-metadata.csv \
                                --p-output-log-fp outputs_beta_binom_balancing_5x/logfile.log \
                                --p-stat-method beta_binom \
                                --p-xgen 5

@@ -1,11 +1,3 @@
-# ----------------------------------------------------------------------------
-# Copyright (c) 2019, QIIME 2 development team.
-#
-# Distributed under the terms of the Modified BSD License.
-#
-# The full license is in the file LICENSE, distributed with this software.
-# ----------------------------------------------------------------------------
-
 import biom
 import sys
 import re
@@ -21,13 +13,13 @@ frag_fp = sys.argv[2]
 table = biom.load_table(biom_fp)
 
 def read_fasta(fasta_fp):
-	with open(fasta_fp, 'r') as f:
+	with open(fasta_fp,'r') as f:
 		seq_lns = f.readlines()
 		seq_dct = dict()
 		for seq_ln in seq_lns:
-			if re.search(">", seq_ln) is not None:
+			if re.search(">",seq_ln) is not None:
 				seq_ln = seq_ln.strip()
-				sp_name = re.sub(">", "", seq_ln)
+				sp_name = re.sub(">","",seq_ln)
 			else:
 				seq_dct[sp_name] = seq_ln.strip()
 	return seq_dct

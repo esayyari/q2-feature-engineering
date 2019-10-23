@@ -12,12 +12,14 @@ from q2_types.tree import NewickFormat
 from qiime2 import CategoricalMetadataColumn
 from .TADA_utils import *
 import pandas as pd
-from qiime2.plugin import TextFileFormat
 import biom
 import tempfile
 from .datasets import make_data_frame
 import shutil
 import qiime2
+import numpy as np
+
+
 def _sort_metada(targets_metadata, biom_table):
     targets = targets_metadata.to_dataframe()
 
@@ -56,7 +58,8 @@ def tada(phylogeny: NewickFormat, otu_table: biom.Table, meta_data: Metadata = N
          stat_method: Str = 'binom', prior_weight: Float = 0, coef: Float = 200, exponent: Float = 0.5,
          pseudo_branch_length: Float = 1e-6, pseudo_cnt: Float = 5,
          normalized: Bool = False, output_log_fp: Str = None,
-         augmented_meta: Metadata = None, original_meta: Metadata=None) -> (biom.Table, biom.Table):
+         augmented_meta: Metadata = None, original_meta: Metadata=None,
+         concatenate_meta: Metadata = None) -> (biom.Table, biom.Table, biom.Table):
     _table, y, _phylogeny, generate_strategy = _read_inputs(biom_table=otu_table,
                                                             phylogeny_fp=str(phylogeny),
                                                             meta_data=meta_data)
@@ -80,13 +83,23 @@ def tada(phylogeny: NewickFormat, otu_table: biom.Table, meta_data: Metadata = N
                 os.mkdir(os.path.dirname(str(original_meta)))
             orig_meta = qiime2.Metadata(orig_pd)
             augm_meta = qiime2.Metadata(augm_pd)
+            concat_pd = pd.concat([orig_pd, augm_pd])
+            concat_meta = qiime2.Metadata(concat_pd)
             orig_meta.save(original_meta)
             augm_meta.save(augmented_meta)
+            concat_meta.save(concatenate_meta)
+
 
         if output_log_fp is not None:
             if not os.path.exists(os.path.dirname(output_log_fp)):
                 os.mkdir(os.path.dirname(output_log_fp))
             shutil.copyfile(sG.log_fp, output_log_fp)
+        if np.sum(orig_biom.ids('observation') == augm_biom.ids('observation')) != len(orig_biom.ids('observation')):
+            raise ValueError(
+                "The order of features in original and augmented data is different."
+                "Please make sure that your phylogeny doesn't have extra features"
+            )
+        concat_biom = orig_biom
+        concat_biom = concat_biom.merge(augm_biom)
 
-
-    return orig_biom, augm_biom
+    return orig_biom, augm_biom, concat_biom
