@@ -197,7 +197,7 @@ plugin.methods.register_function(
 
 
 _inputs = {'table': FeatureTable[Frequency]}
-_parameters = {'metadata': Metadata,
+_parameters = {'metadata': MetadataColumn[Numeric],
                'method': Str,
                'k_neighbors': Int,
                'n_jobs': Int,
@@ -251,7 +251,7 @@ plugin.methods.register_function(
 )
 
 _inputs = {'table': FeatureTable[Frequency]}
-_parameters = {'metadata': Metadata,
+_parameters = {'metadata': MetadataColumn[Numeric],
                'method': Str,
                'voting': Str,
                'n_jobs': Int,
