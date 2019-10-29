@@ -305,7 +305,7 @@ plugin.methods.register_function(
 _inputs = {'table': FeatureTable[Frequency],
            'phylogeny': Phylogeny[Rooted]}
 
-_outputs = [('phylogeny', 'Phylogeny[Rooted]')]
+_outputs = [('phylogeny', Phylogeny[Rooted])]
 _parameters = {'out_log_fp': Str}
 _parameter_descriptions = {'out_log_fp': 'Path to save the log file'}
 _output_descriptions = {'phylogeny': 'Pruned phylogeny'}
