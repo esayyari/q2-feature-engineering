@@ -106,6 +106,7 @@ def synthetic_over_sampling(table: biom.Table, metadata: NumericMetadataColumn,
         dummy_samples = np.asarray(list(sorted_table.ids('sample')) +
                                    ["dummy_sample_" + str(i) for i in range(len(X_resampled) - len(matrix_data))])
     else:
+        orig_samples = sorted_table.ids('sample')
         dummy_samples = over_sampling_cls.sample_indices_
         samples_counter = Counter(dummy_samples)
         dummy_samples_ = []
@@ -113,9 +114,12 @@ def synthetic_over_sampling(table: biom.Table, metadata: NumericMetadataColumn,
         for sample in dummy_samples:
             j = tracking_dict.get(sample, 0)
             if samples_counter[sample] > 1:
-                sample = sample + "_" + str(j + 1)
                 tracking_dict[sample] = j + 1
+                sample = str(orig_samples[sample]) + "_" + str(j + 1)
+            else:
+                sample = str(orig_samples[sample])
             dummy_samples_.append(sample)
+        dummy_samples = dummy_samples_
 
 
 
