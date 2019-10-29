@@ -19,6 +19,7 @@ import shutil
 import qiime2
 import numpy as np
 from .logger import LOG
+from q2_types.tree._transformer import _1
 
 
 def _sort_metada(targets_metadata, biom_table):
@@ -32,7 +33,7 @@ def _sort_metada(targets_metadata, biom_table):
     return targets, feature_data
 
 
-def _read_inputs(biom_table: biom.Table, phylogeny_fp: Str, meta_data: NumericMetadataColumn = None):
+def _read_inputs(biom_table: biom.Table, phylogeny_fp: NewickFormat, meta_data: NumericMetadataColumn = None):
     if meta_data:
         generate_strategy = "balancing"
         meta, biom_table = _sort_metada(meta_data, biom_table)
@@ -44,8 +45,8 @@ def _read_inputs(biom_table: biom.Table, phylogeny_fp: Str, meta_data: NumericMe
         samples = biom_table.ids('sample')
 
     _table = biom_table.sort_order(axis='sample', order=samples)
-
-    _tree = dendropy.Tree.get(path=phylogeny_fp, preserve_underscores=True, schema="newick", rooting='default-rooted')
+    pruned_phylogeny_fp = str(_prune_features_from_phylogeny(_table, phylogeny_fp))
+    _tree = dendropy.Tree.get(path=pruned_phylogeny_fp, preserve_underscores=True, schema="newick", rooting='default-rooted')
 
     if sum(samples != _table.ids('sample')) > 0:
         raise ValueError("The samples IDs in meta data and biom table are not the same! The difference is:",
@@ -62,7 +63,7 @@ def tada(phylogeny: NewickFormat, otu_table: biom.Table, meta_data: NumericMetad
          augmented_meta: Metadata = None, original_meta: Metadata = None,
          concatenate_meta: Metadata = None) -> (biom.Table, biom.Table, biom.Table):
     _table, y, _phylogeny, generate_strategy = _read_inputs(biom_table=otu_table,
-                                                            phylogeny_fp=str(phylogeny),
+                                                            phylogeny_fp=phylogeny,
                                                             meta_data=meta_data)
     if generate_strategy is 'balancing' and (augmented_meta is None or original_meta is None):
         raise ValueError(
@@ -141,6 +142,48 @@ def prune_features_from_phylogeny(table: biom.Table, phylogeny: NewickFormat, ou
     else:
         logger_ins.info("The set of features in the phylogeny and the table are the same. "
                         "No feature will be pruned from the tree.")
+        tree_pruned = tree
     if log_fp:
         shutil.copy(log_fp, out_log_fp)
     return tree_pruned
+
+
+def _prune_features_from_phylogeny(table: biom.Table, phylogeny_fp: NewickFormat) -> NewickFormat:
+    print('prune_phylogeny')
+    tree = TreeNode.read(str(phylogeny_fp))
+    obs = table.ids('observation')
+    tip_names_set = set([x.name for x in tree.tips()])
+    to_delete_names = tip_names_set - set(obs)
+    to_delete_set = to_delete_names
+
+    if len(set(obs) - tip_names_set) > 0:
+        raise ValueError(
+            "There are",  len(set(obs) - tip_names_set),
+            "features in the feature table not present in the phylogeny! Please check your tree"
+        )
+    else:
+        print("All", len(obs), "features present in the feature table are also in the phylogeny.")
+
+    if len(to_delete_set) > 0:
+        t0 = time()
+        print("The set of features in the phylogeny and the table are not the same.",
+                        len(to_delete_set), "features will be pruned from the tree.")
+        tree_pruned = tree.shear(set(obs))
+        print("It takes", time()-t0, "seconds to prune the phylogeny")
+        to_delete_set = set([x.name for x in tree_pruned.tips()]) - set(obs)
+        to_delete_rev_set = set(obs) - set([x.name for x in tree_pruned.tips()])
+        if len(to_delete_set) > 0 or len(to_delete_rev_set):
+            raise ValueError(
+                "Pruning the phylogeny failed! There are", len(to_delete_set), "features in the phylogeny not "
+                                                                               "present in the feature table, and",
+                len(to_delete_rev_set), "features in the feature table not available in the phylogeny! Both should be 0"
+            )
+        else:
+            print("The phylogeny was pruned successfully!")
+    else:
+        print("The set of features in the phylogeny and the table are the same. "
+                        "No feature will be pruned from the tree.")
+        tree_pruned = tree
+    tree_pruned_out = _1(tree_pruned)
+
+    return tree_pruned_out
