@@ -133,8 +133,6 @@ class Data():
             self.logger_ins.info("The set of features in the phylogeny and the table are not the same.",
                                  len(to_delete_set), "features will be pruned from the tree.")
             self.tree.prune_taxa_with_labels(to_delete_set)
-
-
         else:
             self.logger_ins.info("The set of features in the phylogeny and the table are the same. "
                                  "No feature will be pruned from the tree.")

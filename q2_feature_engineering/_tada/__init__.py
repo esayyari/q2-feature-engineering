@@ -5,7 +5,7 @@
 #
 # The full license is in the file LICENSE, distributed with this software.
 # ----------------------------------------------------------------------------
-from ._tada import tada
+from ._tada import tada, prune_features_from_phylogeny
 __version__ = "1.0"
 
-__all__ = ['tada']
+__all__ = ['tada', 'prune_features_from_phylogeny']

@@ -18,6 +18,7 @@ from .datasets import make_data_frame
 import shutil
 import qiime2
 import numpy as np
+from .logger import LOG
 
 
 def _sort_metada(targets_metadata, biom_table):
@@ -29,6 +30,7 @@ def _sort_metada(targets_metadata, biom_table):
     targets = targets.loc[index]
     feature_data = biom_table.filter(index, inplace=False)
     return targets, feature_data
+
 
 def _read_inputs(biom_table: biom.Table, phylogeny_fp: Str, meta_data: NumericMetadataColumn = None):
     if meta_data:
@@ -52,13 +54,12 @@ def _read_inputs(biom_table: biom.Table, phylogeny_fp: Str, meta_data: NumericMe
     return _table, y, _tree, generate_strategy
 
 
-
 def tada(phylogeny: NewickFormat, otu_table: biom.Table, meta_data: NumericMetadataColumn = None,
          seed_num: Int = 0, xgen: Int = 0, n_beta: Int = 1, n_binom: Int = 5, var_method: Str = 'br_penalized',
          stat_method: Str = 'binom', prior_weight: Float = 0, coef: Float = 200, exponent: Float = 0.5,
          pseudo_branch_length: Float = 1e-6, pseudo_cnt: Float = 5,
          normalized: Bool = False, output_log_fp: Str = None,
-         augmented_meta: Metadata = None, original_meta: Metadata=None,
+         augmented_meta: Metadata = None, original_meta: Metadata = None,
          concatenate_meta: Metadata = None) -> (biom.Table, biom.Table, biom.Table):
     _table, y, _phylogeny, generate_strategy = _read_inputs(biom_table=otu_table,
                                                             phylogeny_fp=str(phylogeny),
@@ -89,7 +90,6 @@ def tada(phylogeny: NewickFormat, otu_table: biom.Table, meta_data: NumericMetad
             augm_meta.save(augmented_meta)
             concat_meta.save(concatenate_meta)
 
-
         if output_log_fp is not None:
             if not os.path.exists(os.path.dirname(output_log_fp)):
                 os.mkdir(os.path.dirname(output_log_fp))
@@ -103,3 +103,25 @@ def tada(phylogeny: NewickFormat, otu_table: biom.Table, meta_data: NumericMetad
         concat_biom = concat_biom.merge(augm_biom)
 
     return orig_biom, augm_biom, concat_biom
+
+
+def prune_features_from_phylogeny(table: biom.Table, phylogeny: NewickFormat, out_log_fp: Str = None) -> NewickFormat:
+    log_fp = tempfile.mktemp()
+    logger_ins = LOG(log_fp).get_logger('prune_phylogeny')
+    tree = dendropy.Tree.get(path=str(phylogeny), preserve_underscores=True, schema="newick", rooting='default-rooted')
+    obs = table.ids('observation')
+    to_delete_set = set([x.taxon.label for x in tree.leaf_nodes()]) - set(obs)
+    if len(to_delete_set) > 0:
+        logger_ins.info("The set of features in the phylogeny and the table are not the same.",
+                        len(to_delete_set), "features will be pruned from the tree.")
+        tree.prune_taxa_with_labels(to_delete_set)
+    else:
+        logger_ins.info("The set of features in the phylogeny and the table are the same. "
+                        "No feature will be pruned from the tree.")
+    if log_fp:
+        shutil.copy(log_fp, out_log_fp)
+    tree_out = NewickFormat()
+    tmp_out = tempfile.mktemp()
+    tree.write(path=tmp_out, schema="newick", suppress_rooting=True)
+    shutil.copy(tmp_out, str(tree_out))
+    return tree_out

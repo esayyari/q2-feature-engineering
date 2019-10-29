@@ -12,7 +12,7 @@ from q2_types.tree import Phylogeny, Rooted
 import re
 import ast
 import os
-from ._tada import tada
+from ._tada import tada, prune_features_from_phylogeny
 from q2_types.feature_data import FeatureData, Sequence
 from ._tada._data_preprocess import prune_reference_and_cluster_features, reorder_feature_table
 from ._smote.ML_over_sampling import synthetic_over_sampling
@@ -299,5 +299,29 @@ plugin.methods.register_function(
     name="The plugin for balancing class labels by under sampling the over represented class.",
     description="The plugin for balancing class labels by under sampling the over represented class.",
     citations=[citations['imblearn']],
+    deprecated=False
+)
+
+_inputs = {'table': FeatureTable[Frequency],
+           'phylogeny': Phylogeny[Rooted]}
+
+_outputs = [('phylogeny', 'Phylogeny[Rooted]')]
+_parameters = {'out_log_fp': Str}
+_parameter_descriptions = {'out_log_fp': 'Path to save the log file'}
+_output_descriptions = {'phylogeny': 'Pruned phylogeny'}
+_input_descriptions = {'table': 'Feature table',
+                       'phylogeny': "The phylogeny corresponding to the set of features available in the table. "
+                                    "There can be features not present in the table that will be removed from the tree"}
+plugin.methods.register_function(
+    function=prune_features_from_phylogeny,
+    inputs=_inputs,
+    outputs=_outputs,
+    parameters=_parameters,
+    parameter_descriptions=_parameter_descriptions,
+    input_descriptions=_input_descriptions,
+    output_descriptions=_output_descriptions,
+    name="Tool to prune a phylogeny given the feature table",
+    description="Tool to prune a phylogeny using the features present in the feature table. ",
+    citations=[],
     deprecated=False
 )
