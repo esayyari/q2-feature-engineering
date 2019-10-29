@@ -126,7 +126,7 @@ def prune_features_from_phylogeny(table: biom.Table, phylogeny: NewickFormat, ou
         t0 = time()
         logger_ins.info("The set of features in the phylogeny and the table are not the same.",
                         len(to_delete_set), "features will be pruned from the tree.")
-        tree_pruned = tree.shear(to_delete_set)
+        tree_pruned = tree.shear(set(obs))
         logger_ins.info("It takes", time()-t0, "seconds to prune the phylogeny")
         to_delete_set = set([x.name for x in tree_pruned.tips()]) - set(obs)
         to_delete_rev_set = set(obs) - set([x.name for x in tree_pruned.tips()])
