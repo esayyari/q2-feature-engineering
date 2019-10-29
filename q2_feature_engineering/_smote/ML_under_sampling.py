@@ -87,7 +87,7 @@ def synthetic_under_sampling(table: biom.Table, metadata: NumericMetadataColumn,
         raise NotImplementedError("Method", method, "is not implemented yet")
     under_sampling_dummy = sorted_table.filter(ids_to_keep=dummy_samples, inplace=False)
     under_sampling_dummy = under_sampling_dummy.sort_order(order=dummy_samples, axis='sample')
-    if method == "RandomUnderSampler" and np.sum(under_sampling_dummy.matrix_data-X_resampled) != 0:
+    if method == "RandomUnderSampler" and np.sum(under_sampling_dummy.matrix_data.transpose()-X_resampled) != 0:
         raise ValueError("The undersampling changed the matrix data")
 
     undersampled_table = biom.Table(X_resampled.transpose(), observation_ids=sorted_table.ids('observation'),
