@@ -111,6 +111,11 @@ def prune_features_from_phylogeny(table: biom.Table, phylogeny: NewickFormat, ou
     tree = dendropy.Tree.get(path=str(phylogeny), preserve_underscores=True, schema="newick", rooting='default-rooted')
     obs = table.ids('observation')
     to_delete_set = set([x.taxon.label for x in tree.leaf_nodes()]) - set(obs)
+    if set(obs) - set([x.taxon.label for x in tree.leaf_nodes()]) > 0:
+        raise ValueError(
+            "There are",  len(set(obs) - set([x.taxon.label for x in tree.leaf_nodes()])),
+            "features in the feature table not present in the phylogeny! Please check your tree"
+        )
     if len(to_delete_set) > 0:
         logger_ins.info("The set of features in the phylogeny and the table are not the same.",
                         len(to_delete_set), "features will be pruned from the tree.")
