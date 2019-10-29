@@ -116,10 +116,25 @@ def prune_features_from_phylogeny(table: biom.Table, phylogeny: NewickFormat, ou
             "There are",  len(set(obs) - set([x.taxon.label for x in tree.leaf_nodes()])),
             "features in the feature table not present in the phylogeny! Please check your tree"
         )
+    else:
+        print("All", len(obs), "features present in the feature table are also in the phylogeny.")
+
     if len(to_delete_set) > 0:
+        t0 = time()
         logger_ins.info("The set of features in the phylogeny and the table are not the same.",
                         len(to_delete_set), "features will be pruned from the tree.")
         tree.prune_taxa_with_labels(to_delete_set)
+        logger_ins.info("It takes", time()-t0, "seconds to prune the phylogeny")
+        to_delete_set = set([x.taxon.label for x in tree.leaf_nodes()]) - set(obs)
+        to_delete_rev_set = set(obs) - set([x.taxon.label for x in tree.leaf_nodes()])
+        if len(to_delete_set) > 0 or len(to_delete_rev_set):
+            raise ValueError(
+                "Pruning the phylogeny failed! There are", len(to_delete_set), "features in the phylogeny not "
+                                                                               "present in the feature table, and",
+                len(to_delete_rev_set), "features in the feature table not available in the phylogeny! Both should be 0"
+            )
+        else:
+            logger_ins.info("The phylogeny was pruned successfully!")
     else:
         logger_ins.info("The set of features in the phylogeny and the table are the same. "
                         "No feature will be pruned from the tree.")
