@@ -131,12 +131,13 @@ class Data():
         to_delete_set = set([x.taxon.label for x in self.tree.leaf_nodes()]) - set(self.obs)
         if len(to_delete_set) > 0:
             self.logger_ins.info("The set of features in the phylogeny and the table are not the same.",
-                            len(to_delete_set), "features will be pruned from the tree.")
+                                 len(to_delete_set), "features will be pruned from the tree.")
             self.tree.prune_taxa_with_labels(to_delete_set)
+
 
         else:
             self.logger_ins.info("The set of features in the phylogeny and the table are the same. "
-                            "No feature will be pruned from the tree.")
+                                 "No feature will be pruned from the tree.")
         return
 
     def _prune_table(self, table, min_samples: int = 1):
@@ -147,7 +148,6 @@ class Data():
         '''
 		This function sets the number of samples to be drawn for each class
 		self.n_samples_to_select: key: class label, values: number of samples to be selected from each class
-
 		:return:
 		'''
         # If self.most_freq_class is None or self.freq_classes is None, then we are just augmenting, no need to
@@ -204,10 +204,11 @@ class Data():
         self._set_clusters()
 
     def _set_meta_clusters(self, labels):
+
         '''
 		:param labels: phenotype labels
-		creates a data frame from the labels, and fills the missing labels with a label "-1" by default.
-		:return: data frame (meta), labels, classes: set of labels, counts: number of samples corresponding to each class
+        creates a data frame from the labels, and fills the missing labels with a label "-1" by default.
+        :return: data frame (meta), labels, classes: set of labels, counts: number of samples corresponding to each class
 		'''
         labels = np.asarray(labels).ravel()
         meta = pd.DataFrame(index=self.samples, columns=['label'], data=labels)

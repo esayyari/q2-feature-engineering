@@ -9,7 +9,7 @@
 
 from qiime2.plugin import (Str, Int, Bool, Float, Metadata)
 from q2_types.tree import NewickFormat
-from qiime2 import CategoricalMetadataColumn
+from qiime2 import NumericMetadataColumn
 from .TADA_utils import *
 import pandas as pd
 import biom
@@ -30,7 +30,7 @@ def _sort_metada(targets_metadata, biom_table):
     feature_data = biom_table.filter(index, inplace=False)
     return targets, feature_data
 
-def _read_inputs(biom_table: biom.Table, phylogeny_fp: Str, meta_data: CategoricalMetadataColumn = None):
+def _read_inputs(biom_table: biom.Table, phylogeny_fp: Str, meta_data: NumericMetadataColumn = None):
     if meta_data:
         generate_strategy = "balancing"
         meta, biom_table = _sort_metada(meta_data, biom_table)
@@ -53,7 +53,7 @@ def _read_inputs(biom_table: biom.Table, phylogeny_fp: Str, meta_data: Categoric
 
 
 
-def tada(phylogeny: NewickFormat, otu_table: biom.Table, meta_data: Metadata = None,
+def tada(phylogeny: NewickFormat, otu_table: biom.Table, meta_data: NumericMetadataColumn = None,
          seed_num: Int = 0, xgen: Int = 0, n_beta: Int = 1, n_binom: Int = 5, var_method: Str = 'br_penalized',
          stat_method: Str = 'binom', prior_weight: Float = 0, coef: Float = 200, exponent: Float = 0.5,
          pseudo_branch_length: Float = 1e-6, pseudo_cnt: Float = 5,
