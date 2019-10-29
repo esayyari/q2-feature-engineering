@@ -112,7 +112,7 @@ def prune_features_from_phylogeny(table: biom.Table, phylogeny: NewickFormat, ou
     obs = table.ids('observation')
     tip_names_set = set([x.name for x in tree.tips()])
     to_delete_names = tip_names_set - set(obs)
-    to_delete_set = set([tree.find(x) for x in to_delete_names])
+    to_delete_set = to_delete_names
 
     if len(set(obs) - tip_names_set) > 0:
         raise ValueError(
