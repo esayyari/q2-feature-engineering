@@ -5,8 +5,8 @@
 #
 # The full license is in the file LICENSE, distributed with this software.
 # ----------------------------------------------------------------------------
-
-
+from skbio.tree import TreeNode
+import skbio
 from qiime2.plugin import (Str, Int, Bool, Float, Metadata)
 from q2_types.tree import NewickFormat
 from qiime2 import NumericMetadataColumn
@@ -105,15 +105,18 @@ def tada(phylogeny: NewickFormat, otu_table: biom.Table, meta_data: NumericMetad
     return orig_biom, augm_biom, concat_biom
 
 
-def prune_features_from_phylogeny(table: biom.Table, phylogeny: NewickFormat, out_log_fp: Str = None) -> NewickFormat:
+def prune_features_from_phylogeny(table: biom.Table, phylogeny: NewickFormat, out_log_fp: Str = None) -> skbio.TreeNode:
     log_fp = tempfile.mktemp()
     logger_ins = LOG(log_fp).get_logger('prune_phylogeny')
-    tree = dendropy.Tree.get(path=str(phylogeny), preserve_underscores=True, schema="newick", rooting='default-rooted')
+    tree = TreeNode.read(str(phylogeny))
     obs = table.ids('observation')
-    to_delete_set = set([x.taxon.label for x in tree.leaf_nodes()]) - set(obs)
-    if len(set(obs) - set([x.taxon.label for x in tree.leaf_nodes()])) > 0:
+    tip_names_set = set([x.name for x in tree.tips()])
+    to_delete_names = tip_names_set - set(obs)
+    to_delete_set = set([tree.find(x) for x in to_delete_names])
+
+    if len(set(obs) - tip_names_set) > 0:
         raise ValueError(
-            "There are",  len(set(obs) - set([x.taxon.label for x in tree.leaf_nodes()])),
+            "There are",  len(set(obs) - tip_names_set),
             "features in the feature table not present in the phylogeny! Please check your tree"
         )
     else:
@@ -123,10 +126,10 @@ def prune_features_from_phylogeny(table: biom.Table, phylogeny: NewickFormat, ou
         t0 = time()
         logger_ins.info("The set of features in the phylogeny and the table are not the same.",
                         len(to_delete_set), "features will be pruned from the tree.")
-        tree.prune_taxa_with_labels(to_delete_set)
+        tree_pruned = tree.shear(to_delete_set)
         logger_ins.info("It takes", time()-t0, "seconds to prune the phylogeny")
-        to_delete_set = set([x.taxon.label for x in tree.leaf_nodes()]) - set(obs)
-        to_delete_rev_set = set(obs) - set([x.taxon.label for x in tree.leaf_nodes()])
+        to_delete_set = set([x.name for x in tree.tips()]) - set(obs)
+        to_delete_rev_set = set(obs) - set([x.name for x in tree.tips()])
         if len(to_delete_set) > 0 or len(to_delete_rev_set):
             raise ValueError(
                 "Pruning the phylogeny failed! There are", len(to_delete_set), "features in the phylogeny not "
@@ -140,8 +143,4 @@ def prune_features_from_phylogeny(table: biom.Table, phylogeny: NewickFormat, ou
                         "No feature will be pruned from the tree.")
     if log_fp:
         shutil.copy(log_fp, out_log_fp)
-    tree_out = NewickFormat()
-    tmp_out = tempfile.mktemp()
-    tree.write(path=tmp_out, schema="newick", suppress_rooting=True)
-    shutil.copy(tmp_out, str(tree_out))
-    return tree_out
+    return tree_pruned
