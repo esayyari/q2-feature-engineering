@@ -308,7 +308,7 @@ _inputs = {'table': FeatureTable[Frequency],
 _outputs = [('pruned_phylogeny', Phylogeny[Rooted])]
 _parameters = {'out_log_fp': Str}
 _parameter_descriptions = {'out_log_fp': 'Path to save the log file'}
-_output_descriptions = {'phylogeny': 'Pruned phylogeny'}
+_output_descriptions = {'pruned_phylogeny': 'Pruned phylogeny'}
 _input_descriptions = {'table': 'Feature table',
                        'phylogeny': "The phylogeny corresponding to the set of features available in the table. "
                                     "There can be features not present in the table that will be removed from the tree"}
