@@ -9,7 +9,7 @@ import qiime2
 import shutil
 import tempfile
 import sklearn
-
+from collections import Counter
 
 dispatcher = {'ADASYN': over_sampling.ADASYN,
               'RandomOverSampler': over_sampling.RandomOverSampler,
@@ -107,6 +107,17 @@ def synthetic_over_sampling(table: biom.Table, metadata: NumericMetadataColumn,
                                    ["dummy_sample_" + str(i) for i in range(len(X_resampled) - len(matrix_data))])
     else:
         dummy_samples = over_sampling_cls.sample_indices_
+        samples_counter = Counter(dummy_samples)
+        dummy_samples_ = []
+        tracking_dict = dict()
+        for sample in dummy_samples:
+            j = tracking_dict.get(sample, 0)
+            if samples_counter[sample] > 1:
+                sample = sample + "_" + str(j + 1)
+                tracking_dict[sample] = j + 1
+            dummy_samples_.append(sample)
+
+
 
     oversampled_table = biom.Table(X_resampled.transpose(), observation_ids=sorted_table.ids('observation'),
                                    sample_ids=dummy_samples)
