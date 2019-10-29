@@ -76,16 +76,15 @@ def synthetic_over_sampling(table: biom.Table, metadata: NumericMetadataColumn,
             'The optional methods for over sampling are', dispatcher.keys(), "instead it received", method
         )
     if method == 'ADASYN':
-        neigh = sklearn.neighbors.NearestNeighbors(metric='braycurtis', n_neighbors=k_neighbors + 1,
-                                                   random_state=random_state)
-        over_sampling_cls = cls(sampling_strategy=sampling_strategy,
-                                random_state=random_state, n_neighbors=neigh, n_jobs=n_jobs)
+        neigh = sklearn.neighbors.NearestNeighbors(metric='braycurtis', n_neighbors=k_neighbors + 1)
+        over_sampling_cls = cls(sampling_strategy=sampling_strategy, random_state=random_state,
+                                n_neighbors=neigh, n_jobs=n_jobs)
     elif method == 'RandomOverSampler':
         over_sampling_cls = cls(sampling_strategy=sampling_strategy, random_state=random_state)
     else:
-        neigh = sklearn.neighbors.NearestNeighbors(metric='braycurtis', n_neighbors=k_neighbors + 1,
-                                                   random_state=random_state)
-        over_sampling_cls = cls(sampling_strategy=sampling_strategy, k_neighbors=neigh, n_jobs=n_jobs)
+        neigh = sklearn.neighbors.NearestNeighbors(metric='braycurtis', n_neighbors=k_neighbors + 1)
+        over_sampling_cls = cls(sampling_strategy=sampling_strategy, k_neighbors=neigh,
+                                random_state=random_state, n_jobs=n_jobs)
     X_resampled, y_resampled = over_sampling_cls.fit_resample(matrix_data, sorted_metadata)
     if np.sum(np.abs(X_resampled[:len(matrix_data), :] - matrix_data)) != 0 or \
             np.sum(y_resampled[:len(matrix_data)] == metadata) != len(matrix_data):
