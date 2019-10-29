@@ -78,7 +78,11 @@ def synthetic_under_sampling(table: biom.Table, metadata: NumericMetadataColumn,
         logger_ins.info("The under-sampling finished successfully!")
         logger_ins.info("Overall, the size of data is", len(X_resampled))
     if method == 'RandomUnderSampler':
-        dummy_samples = under_sampling_cls.sample_indices_
+        dummy_samples_ids = under_sampling_cls.sample_indices_
+        dummy_samples = []
+        orig_samples = sorted_table.ids('sample')
+        for sample_id in dummy_samples_ids:
+            dummy_samples.append(orig_samples[sample_id])
     else:
         raise NotImplementedError("Method", method, "is not implemented yet")
     under_sampling_dummy = sorted_table.filter(ids_to_keep=dummy_samples, inplace=False)
