@@ -86,7 +86,7 @@ def synthetic_under_sampling(table: biom.Table, metadata: NumericMetadataColumn,
     if method == "RandomUnderSampler" and np.sum(under_sampling_dummy.matrix_data-X_resampled) != 0:
         raise ValueError("The undersampling changed the matrix data")
 
-    undersampled_table = biom.Table(X_resampled, observation_ids=sorted_table.ids('observation'),
+    undersampled_table = biom.Table(X_resampled.transpose(), observation_ids=sorted_table.ids('observation'),
                                     sample_ids=dummy_samples)
     undersampled_metadata = pd.DataFrame(index=dummy_samples, data=y_resampled)
     undersampled_metadata.index.names = ['#SampleID']

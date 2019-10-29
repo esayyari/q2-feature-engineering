@@ -87,9 +87,13 @@ def synthetic_over_sampling(table: biom.Table, metadata: NumericMetadataColumn,
                                 random_state=random_state, n_jobs=n_jobs)
     X_resampled, y_resampled = over_sampling_cls.fit_resample(matrix_data, sorted_metadata)
     if np.sum(np.abs(X_resampled[:len(matrix_data), :] - matrix_data)) != 0 or \
-            np.sum(y_resampled[:len(matrix_data)] == metadata) != len(matrix_data):
+            np.sum(y_resampled[:len(matrix_data)] == sorted_metadata) != len(matrix_data):
         raise ValueError(
-            "Over sampling method changed the data! Please double check your biom table"
+            "Over sampling method changed the data! Please double check your biom table. The sum of differences "
+            "between the generated and original samples is",
+            np.sum(np.abs(X_resampled[:len(matrix_data), :] - matrix_data)), "(should be 0.0) and the number of "
+            "retained labels is", np.sum(y_resampled[:len(matrix_data)] == sorted_metadata),
+            "while should be", len(matrix_data)
         )
     else:
         if log_fp:
@@ -104,7 +108,7 @@ def synthetic_over_sampling(table: biom.Table, metadata: NumericMetadataColumn,
     else:
         dummy_samples = over_sampling_cls.sample_indices_
 
-    oversampled_table = biom.Table(X_resampled, observation_ids=sorted_table.ids('observation'),
+    oversampled_table = biom.Table(X_resampled.transpose(), observation_ids=sorted_table.ids('observation'),
                                    sample_ids=dummy_samples)
     oversampled_metadata = pd.DataFrame(index=dummy_samples, data=y_resampled)
     oversampled_metadata.index.names = ['#SampleID']
