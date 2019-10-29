@@ -93,7 +93,7 @@ def synthetic_over_sampling(table: biom.Table, metadata: NumericMetadataColumn,
             "between the generated and original samples is",
             np.sum(np.abs(X_resampled[:len(matrix_data), :] - matrix_data)), "(should be 0.0) and the number of "
             "retained labels is", np.sum(y_resampled[:len(matrix_data)] == sorted_metadata),
-            "while should be", len(matrix_data)
+            "while should be", len(sorted_metadata)
         )
     else:
         if log_fp:

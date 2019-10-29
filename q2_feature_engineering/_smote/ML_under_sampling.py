@@ -64,7 +64,7 @@ def synthetic_under_sampling(table: biom.Table, metadata: NumericMetadataColumn,
         if log_fp:
             logger_ins.info("The input table is normalized before using it for oversampling")
     sorted_table, sorted_metadata = _read_inputs(table, meta_data=metadata)
-    matrix_data = sorted_table.matrix_data.transpose()
+    matrix_data = sorted_table.matrix_data.transpose().todense()
     if method not in dispatcher:
         raise ValueError(
             'The optional methods for over sampling are', dispatcher.keys(), "instead it received", method
