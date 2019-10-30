@@ -52,6 +52,13 @@ _parameter_descriptions = {"seed_num": "Seed number. The default value is 0.",
                                    "TADA eventually generates new samples until "
                                    "all classes have [xgen+1] * [maximum class size] samples. The "
                                    "default value is 0",
+                           "sampling_strategy": "This defines the sampling strategy, the default is None, and will "
+                                                "balance the distribution of labels (only for balancing). "
+                                                "Alternatively, you can pass a TSV file, where the first column "
+                                                "specifies the class label (header column label should be #GroupID), "
+                                                "and the second column (with column label 'size'), specifies the size "
+                                                "of that class. You should use the same class labels as you have "
+                                                "in your metadata column",
                            "n_beta": "The number of draws from the beta distribution. For augmentation, "
                                      "TADA will generate [n_binom]*[n_beta] samples per each sample. "
                                      "The default value is 1.",
@@ -79,16 +86,17 @@ _parameter_descriptions = {"seed_num": "Seed number. The default value is 0.",
                                          "one. The default option is 0.",
                            "output_log_fp": "If you want to write the log file of TADA, please specify a path. "
                                             "The default option is None.",
-                           'original_meta': "The metadata file path corresponding to original samples. "
-                                            "This is required when using TADA for balancing. Default is None",
-                           'augmented_meta': "The metadata file path corresponding to generated samples. "
-                                             "This is required when using TADA for balancing. Default is None",
                            'concatenate_meta': "The metadata file path corresponding to the concatenation of "
                                                "generated and original samples. This is required when using TADA for"
-                                               "balancing. Default is None"}
+                                               "balancing. Default is None",
+                           'original_table': "Original samples stored in a biom table. Default is None.",
+                           'augmented_table': "Generated samples stored in a biom table. Default is None.",
+                           }
+
 _parameters = {'seed_num': Int,
                'meta_data': MetadataColumn[Numeric],
                'xgen': Int,
+               'sampling_strategy': Str,
                'n_beta': Int,
                'n_binom': Int,
                'var_method': Str,
@@ -100,24 +108,22 @@ _parameters = {'seed_num': Int,
                'pseudo_cnt': Int,
                'normalized': Bool,
                'output_log_fp': Str,
-               'original_meta': Str,
-               'augmented_meta': Str,
-               'concatenate_meta': Str
+               'augmented_table': Str,
+               'original_table': Str,
+               'concatenate_meta': Str,
                }
 
 _inputs = {'phylogeny': Phylogeny[Rooted],
-           'otu_table': FeatureTable[Frequency]}
+           'table': FeatureTable[Frequency]}
 
 _input_descriptions = {"phylogeny": "Phylogeny file in newick format",
-                       "otu_table": "The count table. This should be in Qiime2 FeatureTable artifact"}
+                       "table": "The count table. This should be in Qiime2 FeatureTable artifact"}
 
-_outputs = [('orig_biom', FeatureTable[Frequency]),
-            ('augmented_biom', FeatureTable[Frequency]),
+_outputs = [('pruned_phylogeny', Phylogeny[Rooted]),
             ('concatenated_biom', FeatureTable[Frequency])]
 
-_output_descriptions = {'orig_biom': "Original samples stored in a biom table",
-                        'augmented_biom': "Generated samples stored in a biom table",
-                        'concatenated_biom': "The Concatenation of generated and original biom tables"}
+_output_descriptions = {'concatenated_biom': "The Concatenation of generated and original biom tables",
+                        'pruned_phylogeny': "The pruned input phylogeny based on the training features."}
 
 plugin.methods.register_function(
     function=tada,

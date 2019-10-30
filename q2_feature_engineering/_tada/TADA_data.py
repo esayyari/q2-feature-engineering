@@ -95,7 +95,7 @@ class Data():
             self.most_freq_class = None
             self.freq_classes = None
 
-    def _set_data(self, table, y, tree):
+    def _set_data(self, table, y, tree, sampling_strategy):
         t0 = time()
         self._load_tree(tree)
         self.logger_ins.info("loading the tree took", time() - t0, "seconds")
@@ -115,7 +115,7 @@ class Data():
         t0 = time()
         self._set_labels(y)
         self.logger_ins.info("Meta data loaded in", time() - t0, "seconds")
-        self._set_num_to_select()
+        self._set_num_to_select(sampling_strategy)
         self._add_pseudo()
         self._init_gen()
 
@@ -142,7 +142,7 @@ class Data():
         filter_fn = lambda val, id_, md: np.sum(val) >= min_samples
         return table.filter(filter_fn, axis='observation', inplace=False)
 
-    def _set_num_to_select(self):
+    def _set_num_to_select(self, sampling_strategy=None):
         '''
 		This function sets the number of samples to be drawn for each class
 		self.n_samples_to_select: key: class label, values: number of samples to be selected from each class
@@ -150,6 +150,19 @@ class Data():
 		'''
         # If self.most_freq_class is None or self.freq_classes is None, then we are just augmenting, no need to
         # set up n_samples_to_select
+        self.class_sizes = None
+        if sampling_strategy:
+            try:
+                sampling_strategy_pd = pd.read_csv(sampling_strategy, sep="\t", low_memory=False,
+                                                   index_col='#GroupID')
+                self.class_sizes = sampling_strategy_pd.iloc[:, 0]
+            except ValueError:
+                print(
+                    "The first column for the sampling strategy TSV (tab-delimited) file should be '#GroupID', and "
+                    "first column correspond to group sizes. Please note that your group IDs should match those "
+                    "in metadata file"
+                )
+                exit(1)
         if self.generate_strategy == 'augmentation':
             self.n_binom_extra = {'all': 0}
         else:
@@ -161,11 +174,29 @@ class Data():
 
                 # check if our logic was correct
                 if n_all + self.most_freq_class - self.freq_classes[c] < 0:
-                    print("The n_all is negative!", n_all + self.most_freq_class - self.freq_classes[c], c, n_all,
-                          self.most_freq_class, self.freq_classes[c])
-                    exit()
+                    raise ValueError(
+                        "Please choose a non negative xgen number!"
+                    )
                 # number of samples to generate equals n_total_samples_to_gen
                 n_total_samples_to_gen = np.max(n_all + self.most_freq_class - self.freq_classes[c], 0)
+
+                if self.class_sizes is not None:
+
+                    try:
+                        self.logger_ins.info("Reading the total samples to generate for class", c, "from",
+                                             sampling_strategy)
+                        n_total_samples_to_gen = np.max(self.class_sizes[c] - self.freq_classes[c], 0)
+                    except KeyError:
+                        print(
+                            "The first column for the sampling strategy TSV (tab-delimited) file should be "
+                            "'#GroupID', and first column correspond to group sizes. Please note that your group IDs "
+                            "should match those in metadata file. Your class labels from meta data file are",
+                            set(self.freq_classes.keys()), "but your class labels in your sampling strategy TSV "
+                                                           "file are", set(self.class_sizes.index)
+                        )
+                        exit(1)
+
+                self.logger_ins.info("Will generate", n_total_samples_to_gen, "for the class", c)
 
                 # per each sample we generate self.n_binom*self.n_beta samples. Thus, the number of samples to select is
 

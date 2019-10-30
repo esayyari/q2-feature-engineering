@@ -18,9 +18,8 @@ from .datasets import make_data_frame
 import shutil
 import qiime2
 import numpy as np
-from .logger import LOG
 from q2_types.tree._transformer import _1
-
+from qiime2 import Artifact
 
 def _sort_metada(targets_metadata, biom_table):
     targets = targets_metadata.to_dataframe()
@@ -45,27 +44,28 @@ def _read_inputs(biom_table: biom.Table, phylogeny_fp: NewickFormat, meta_data: 
         samples = biom_table.ids('sample')
 
     _table = biom_table.sort_order(axis='sample', order=samples)
-    pruned_phylogeny_fp = str(_prune_features_from_phylogeny(_table, phylogeny_fp))
-    _tree = dendropy.Tree.get(path=pruned_phylogeny_fp, preserve_underscores=True, schema="newick", rooting='default-rooted')
+    pruned_phylogeny_fp = _prune_features_from_phylogeny(_table, phylogeny_fp)
+    _tree = dendropy.Tree.get(path=str(pruned_phylogeny_fp), preserve_underscores=True,
+                              schema="newick", rooting='default-rooted')
 
     if sum(samples != _table.ids('sample')) > 0:
         raise ValueError("The samples IDs in meta data and biom table are not the same! The difference is:",
                          set(samples) - set(_table.ids('sample')), "Please double check.")
 
-    return _table, y, _tree, generate_strategy
+    return _table, y, _tree, generate_strategy, pruned_phylogeny_fp
 
 
-def tada(phylogeny: NewickFormat, otu_table: biom.Table, meta_data: NumericMetadataColumn = None,
+def tada(phylogeny: NewickFormat, table: biom.Table, meta_data: NumericMetadataColumn = None,
          seed_num: Int = 0, xgen: Int = 0, n_beta: Int = 1, n_binom: Int = 5, var_method: Str = 'br_penalized',
          stat_method: Str = 'binom', prior_weight: Float = 0, coef: Float = 200, exponent: Float = 0.5,
          pseudo_branch_length: Float = 1e-6, pseudo_cnt: Float = 5,
          normalized: Bool = False, output_log_fp: Str = None,
-         augmented_meta: Metadata = None, original_meta: Metadata = None,
-         concatenate_meta: Metadata = None) -> (biom.Table, biom.Table, biom.Table):
-    _table, y, _phylogeny, generate_strategy = _read_inputs(biom_table=otu_table,
+         original_table: Str = None, augmented_table: Str = None,
+         concatenate_meta: Metadata = None, sampling_strategy: Str = None) -> (NewickFormat, biom.Table):
+    _table, y, _phylogeny, generate_strategy, pruned_phylogeny = _read_inputs(biom_table=table,
                                                             phylogeny_fp=phylogeny,
                                                             meta_data=meta_data)
-    if generate_strategy is 'balancing' and (augmented_meta is None or original_meta is None):
+    if generate_strategy is 'balancing' and (concatenate_meta is None):
         raise ValueError(
             "Expected a path to write out the generated and original labels and metadata!"
         )
@@ -75,20 +75,19 @@ def tada(phylogeny: NewickFormat, otu_table: biom.Table, meta_data: NumericMetad
                              prior_weight=prior_weight,
                              coef=coef, exponent=exponent, pseudo=pseudo_branch_length,
                              pseudo_cnt=pseudo_cnt, normalized=normalized)
-        orig_biom, orig_labels, augm_biom, augm_labels = sG.fit_transform(table=_table, y=y, tree=_phylogeny)
-        if np.sum(orig_biom.matrix_data - otu_table.matrix_data) > 1e-20:
+        orig_biom, orig_labels, augm_biom, augm_labels = sG.fit_transform(table=_table, y=y, tree=_phylogeny,
+                                                                          sampling_strategy=sampling_strategy)
+        if np.sum(orig_biom.matrix_data - table.matrix_data) > 1e-20:
             raise ValueError(
                 "The original biom table doesn't match the output of generator function! Please double check")
         if generate_strategy is 'balancing':
             orig_pd, augm_pd = make_data_frame(orig_biom, augm_biom, orig_labels, augm_labels)
-            if not os.path.exists(os.path.dirname(str(original_meta))):
-                os.mkdir(os.path.dirname(str(original_meta)))
-            orig_meta = qiime2.Metadata(orig_pd)
-            augm_meta = qiime2.Metadata(augm_pd)
+
+            if concatenate_meta and not os.path.exists(os.path.dirname(str(concatenate_meta))):
+                os.mkdir(os.path.dirname(str(concatenate_meta)))
+
             concat_pd = pd.concat([orig_pd, augm_pd])
             concat_meta = qiime2.Metadata(concat_pd)
-            orig_meta.save(original_meta)
-            augm_meta.save(augmented_meta)
             concat_meta.save(concatenate_meta)
 
         if output_log_fp is not None:
@@ -100,15 +99,26 @@ def tada(phylogeny: NewickFormat, otu_table: biom.Table, meta_data: NumericMetad
                 "The order of features in original and augmented data is different."
                 "Please make sure that your phylogeny doesn't have extra features"
             )
+        if original_table and not os.path.exists(os.path.dirname(str(original_table))):
+            os.mkdir(os.path.dirname(str(original_table)))
+        elif augmented_table and not os.path.exists(os.path.dirname(str(original_table))):
+            os.mkdir(os.path.dirname(str(augmented_table)))
+        if augmented_table is not None:
+            augm_qza = Artifact.import_data("FeatureTable[Frequency]", augm_biom)
+            augm_qza.save(augmented_table)
+        if original_table is not None:
+            orig_qza = Artifact.import_data("FeatureTable[Frequency]", orig_biom)
+            orig_qza.save(original_table)
+
         concat_biom = orig_biom
         concat_biom = concat_biom.merge(augm_biom)
 
-    return orig_biom, augm_biom, concat_biom
+    return pruned_phylogeny, concat_biom
 
 
 def prune_features_from_phylogeny(table: biom.Table, phylogeny: NewickFormat, out_log_fp: Str = None) -> skbio.TreeNode:
     log_fp = tempfile.mktemp()
-    logger_ins = LOG(log_fp).get_logger('prune_phylogeny')
+    print('Will prune the phylogeny')
     tree = TreeNode.read(str(phylogeny))
     obs = table.ids('observation')
     tip_names_set = set([x.name for x in tree.tips()])
@@ -125,10 +135,10 @@ def prune_features_from_phylogeny(table: biom.Table, phylogeny: NewickFormat, ou
 
     if len(to_delete_set) > 0:
         t0 = time()
-        logger_ins.info("The set of features in the phylogeny and the table are not the same.",
+        print("The set of features in the phylogeny and the table are not the same.",
                         len(to_delete_set), "features will be pruned from the tree.")
         tree_pruned = tree.shear(set(obs))
-        logger_ins.info("It takes", time()-t0, "seconds to prune the phylogeny")
+        print("It takes", time()-t0, "seconds to prune the phylogeny")
         to_delete_set = set([x.name for x in tree_pruned.tips()]) - set(obs)
         to_delete_rev_set = set(obs) - set([x.name for x in tree_pruned.tips()])
         if len(to_delete_set) > 0 or len(to_delete_rev_set):
@@ -138,9 +148,9 @@ def prune_features_from_phylogeny(table: biom.Table, phylogeny: NewickFormat, ou
                 len(to_delete_rev_set), "features in the feature table not available in the phylogeny! Both should be 0"
             )
         else:
-            logger_ins.info("The phylogeny was pruned successfully!")
+            print("The phylogeny was pruned successfully!")
     else:
-        logger_ins.info("The set of features in the phylogeny and the table are the same. "
+        print("The set of features in the phylogeny and the table are the same. "
                         "No feature will be pruned from the tree.")
         tree_pruned = tree
     if log_fp:
@@ -149,7 +159,7 @@ def prune_features_from_phylogeny(table: biom.Table, phylogeny: NewickFormat, ou
 
 
 def _prune_features_from_phylogeny(table: biom.Table, phylogeny_fp: NewickFormat) -> NewickFormat:
-    print('prune_phylogeny')
+    print('Will prune the phylogeny')
     tree = TreeNode.read(str(phylogeny_fp))
     obs = table.ids('observation')
     tip_names_set = set([x.name for x in tree.tips()])

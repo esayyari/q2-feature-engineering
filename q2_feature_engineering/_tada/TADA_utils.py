@@ -35,14 +35,14 @@ class SampleGenerator(Data, unittest.TestCase):
 		print("The temp directory is", self.dirpath)
 
 
-	def fit_transform(self, table, y, tree: dendropy.Tree):
+	def fit_transform(self, table, y, tree: dendropy.Tree, sampling_strategy=None):
 		'''
 		:param table: input biom table
 		:param y: input labels
 		:param tree:  input tree file path in newick format (dendropy.Tree)
 		:return:
 		'''
-		self._set_data(table, y, tree)
+		self._set_data(table, y, tree, sampling_strategy)
 
 		t0 = time()
 		self._comput_average_distances()
