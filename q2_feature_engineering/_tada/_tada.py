@@ -151,7 +151,7 @@ def prune_features_from_phylogeny(table: biom.Table, phylogeny: NewickFormat, ou
             print("The phylogeny was pruned successfully!")
     else:
         print("The set of features in the phylogeny and the table are the same. "
-                        "No feature will be pruned from the tree.")
+              "No feature will be pruned from the tree.")
         tree_pruned = tree
     if log_fp:
         shutil.copy(log_fp, out_log_fp)
@@ -177,7 +177,7 @@ def _prune_features_from_phylogeny(table: biom.Table, phylogeny_fp: NewickFormat
     if len(to_delete_set) > 0:
         t0 = time()
         print("The set of features in the phylogeny and the table are not the same.",
-                        len(to_delete_set), "features will be pruned from the tree.")
+              len(to_delete_set), "features will be pruned from the tree.")
         tree_pruned = tree.shear(set(obs))
         print("It takes", time()-t0, "seconds to prune the phylogeny")
         to_delete_set = set([x.name for x in tree_pruned.tips()]) - set(obs)
@@ -192,7 +192,7 @@ def _prune_features_from_phylogeny(table: biom.Table, phylogeny_fp: NewickFormat
             print("The phylogeny was pruned successfully!")
     else:
         print("The set of features in the phylogeny and the table are the same. "
-                        "No feature will be pruned from the tree.")
+              "No feature will be pruned from the tree.")
         tree_pruned = tree
     tree_pruned_out = _1(tree_pruned)
 

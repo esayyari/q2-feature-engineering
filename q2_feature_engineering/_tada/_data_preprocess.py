@@ -19,7 +19,7 @@ def get_reference_seqs_from_ids(table: biom.Table, reference_seqs_pd: pd.Series)
     return output_references_fasta
 
 
-def prune_reference_and_cluster_features(query_table: biom.Table, closed_reference_table: biom.Table,
+def cluster_features(query_table: biom.Table, closed_reference_table: biom.Table,
                                          query_sequences: DNAFASTAFormat,
                                          reference_sequences: pd.Series, thr: float = 0.97,
                                          threads: int = 0, output_log_file: str = None) -> (
@@ -65,3 +65,4 @@ def prune_reference_and_cluster_features(query_table: biom.Table, closed_referen
 
 def reorder_feature_table(query_table: biom.Table, reference_table: biom.Table) -> biom.Table:
     return query_table.sort_order(reference_table.ids('observation'))
+

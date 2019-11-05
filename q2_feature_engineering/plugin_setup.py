@@ -14,7 +14,7 @@ import ast
 import os
 from ._tada import tada, prune_features_from_phylogeny
 from q2_types.feature_data import FeatureData, Sequence
-from ._tada._data_preprocess import prune_reference_and_cluster_features, reorder_feature_table
+from ._tada._data_preprocess import cluster_features, reorder_feature_table
 from ._smote.ML_over_sampling import synthetic_over_sampling
 from ._smote.ML_under_sampling import synthetic_under_sampling
 
@@ -171,7 +171,7 @@ _parameter_descriptions = {'thr': 'The similarity threshold for clustering.',
                            'output_log_file': 'The path to save the log file of the code. Default is None'}
 
 plugin.methods.register_function(
-    function=prune_reference_and_cluster_features,
+    function=cluster_features,
     inputs=_inputs,
     parameters=_parameters,
     outputs=_outputs,
