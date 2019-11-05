@@ -64,5 +64,23 @@ def cluster_features(query_table: biom.Table, closed_reference_table: biom.Table
 
 
 def reorder_feature_table(query_table: biom.Table, reference_table: biom.Table) -> biom.Table:
-    return query_table.sort_order(reference_table.ids('observation'))
+    query_samples = query_table.ids()
+    ref_samples = set(reference_table.ids())
+    for sample in query_samples:
+        if sample in ref_samples:
+            raise ValueError(
+                "The sample", sample, "from your reference data found in your query one, while "
+                                      "the two tables should be disjoint."
+            )
+    merged_table = reference_table.merge(query_table)
+    merged_table.filter(ids_to_keep=reference_table.ids('observation'))
+    merged_table.filter(ids_to_keep=query_samples)
+    for sample in merged_table.ids():
+        if sample in ref_samples:
+            raise ValueError(
+                "The sample", sample, "from your reference data found in your query one, while "
+                                      "the two tables should be disjoint."
+            )
+
+    return merged_table.sort_order(reference_table.ids('observation'))
 
