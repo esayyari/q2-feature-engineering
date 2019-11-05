@@ -59,7 +59,7 @@ setup(name='q2-feature-engineering',
                         "scipy>=1.0.0","pandas>=0.22.0"],
       scripts=glob("q2_feature_engineering/scripts/*"),
       package_data={'q2_feature_engineering': ['citations.bib'],
-                    '': 'data'},
+                    '': ['data']},
       entry_points={
         'qiime2.plugins':
         ['q2-feature-engineering=q2_feature_engineering.plugin_setup:plugin']

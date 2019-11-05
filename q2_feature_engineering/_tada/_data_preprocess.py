@@ -22,7 +22,7 @@ def get_reference_seqs_from_ids(table: biom.Table, reference_seqs_pd: pd.Series)
 def cluster_features(query_table: biom.Table, closed_reference_table: biom.Table,
                                          query_sequences: DNAFASTAFormat,
                                          reference_sequences: pd.Series, thr: float = 0.97,
-                                         threads: int = 0, output_log_file: str = None) -> (
+                                         threads: int = 1, output_log_file: str = None) -> (
         biom.Table, DNAFASTAFormat, DNAFASTAFormat):
     reference_sequences_fasta = get_reference_seqs_from_ids(closed_reference_table, reference_sequences)
     results = cluster_features_closed_reference(sequences=query_sequences, table=query_table,
