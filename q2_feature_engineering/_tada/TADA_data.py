@@ -100,7 +100,7 @@ class Data():
         self._load_tree(tree)
         self.logger_ins.info("loading the tree took", time() - t0, "seconds")
         t0 = time()
-        table = self._prune_table(table, min_samples=1)
+        table = self._prune_table(table, min_samples=0)
 
         self._set_table(table)
 

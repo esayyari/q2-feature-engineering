@@ -319,7 +319,7 @@ class SampleGenerator(Data, unittest.TestCase):
 
 
 	def __get_agum_data(self):
-		samples = np.asarray(np.asarray(self.samples_generated).ravel())
+		samples = np.asarray(self.samples_generated).ravel()
 		data = np.asarray(self.augmented_data)
 		if self.normalized:
 			data /= np.sum(data, axis=1, keepdims=True)
@@ -329,7 +329,7 @@ class SampleGenerator(Data, unittest.TestCase):
 		data = np.asarray(feature)
 		data -= self.pseudo_cnt
 		if self.normalized:
-			data /= np.sum(data, axis=1, keepdims=True)
+			data /= np.sum(data, axis=0, keepdims=True)
 		return data
 
 

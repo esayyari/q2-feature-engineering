@@ -6,7 +6,7 @@
 # The full license is in the file LICENSE, distributed with this software.
 # ----------------------------------------------------------------------------
 
-from qiime2.plugin import (Plugin, Str, Int, Bool, Float, Citations, MetadataColumn, Metadata, Numeric)
+from qiime2.plugin import (Plugin, Str, Int, Bool, Float, Citations, MetadataColumn, Metadata, Numeric, Categorical)
 from q2_types.feature_table import (FeatureTable, Frequency)
 from q2_types.tree import Phylogeny, Rooted
 import re
@@ -94,7 +94,7 @@ _parameter_descriptions = {"seed_num": "Seed number. The default value is 0.",
                            }
 
 _parameters = {'seed_num': Int,
-               'meta_data': MetadataColumn[Numeric],
+               'meta_data': MetadataColumn[Numeric|Categorical],
                'xgen': Int,
                'sampling_strategy': Str,
                'n_beta': Int,
@@ -203,7 +203,7 @@ plugin.methods.register_function(
 
 
 _inputs = {'table': FeatureTable[Frequency]}
-_parameters = {'metadata': MetadataColumn[Numeric],
+_parameters = {'metadata': MetadataColumn[Numeric|Categorical],
                'method': Str,
                'k_neighbors': Int,
                'n_jobs': Int,
@@ -257,7 +257,7 @@ plugin.methods.register_function(
 )
 
 _inputs = {'table': FeatureTable[Frequency]}
-_parameters = {'metadata': MetadataColumn[Numeric],
+_parameters = {'metadata': MetadataColumn[Numeric|Categorical],
                'method': Str,
                'voting': Str,
                'n_jobs': Int,
@@ -312,8 +312,8 @@ _inputs = {'table': FeatureTable[Frequency],
            'phylogeny': Phylogeny[Rooted]}
 
 _outputs = [('pruned_phylogeny', Phylogeny[Rooted])]
-_parameters = {'out_log_fp': Str}
-_parameter_descriptions = {'out_log_fp': 'Path to save the log file'}
+_parameters = {}
+_parameter_descriptions = {}
 _output_descriptions = {'pruned_phylogeny': 'Pruned phylogeny'}
 _input_descriptions = {'table': 'Feature table',
                        'phylogeny': "The phylogeny corresponding to the set of features available in the table. "

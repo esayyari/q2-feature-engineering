@@ -21,14 +21,26 @@ import numpy as np
 from q2_types.tree._transformer import _1
 from qiime2 import Artifact
 
+
+def _map_observations(table: biom.Table) -> biom.Table:
+    obs_dict = {}
+    for taxa in table.ids('observation'):
+        obs_dict[taxa] = taxa.replace('_', ' ')
+    table = table.update_ids(id_map=obs_dict, axis='observation', inplace=False)
+    return table
+
+
 def _sort_metada(targets_metadata, biom_table):
     targets = targets_metadata.to_dataframe()
-
     # filter features and targest so samples match
     index = set(targets.index)
     index = [ix for ix in biom_table.ids('sample') if ix in index]
     targets = targets.loc[index]
     feature_data = biom_table.filter(index, inplace=False)
+
+    samples_sorted = np.sort(feature_data.ids('sample'))
+    feature_data = feature_data.sort_order(samples_sorted)
+    targets = targets.reindex(samples_sorted)
     return targets, feature_data
 
 
@@ -43,9 +55,10 @@ def _read_inputs(biom_table: biom.Table, phylogeny_fp: NewickFormat, meta_data: 
         y = pd.Series(data=np.ones((len(biom_table.ids('sample')),)), index=biom_table.ids('sample'))
         samples = biom_table.ids('sample')
 
-    _table = biom_table.sort_order(axis='sample', order=samples)
+    _table_tmp = biom_table.sort_order(axis='sample', order=samples)
+    _table = _map_observations(_table_tmp)
     pruned_phylogeny_fp = _prune_features_from_phylogeny(_table, phylogeny_fp)
-    _tree = dendropy.Tree.get(path=str(pruned_phylogeny_fp), preserve_underscores=True,
+    _tree = dendropy.Tree.get(path=str(pruned_phylogeny_fp), preserve_underscores=False,
                               schema="newick", rooting='default-rooted')
 
     if sum(samples != _table.ids('sample')) > 0:
@@ -69,7 +82,8 @@ def tada(phylogeny: NewickFormat, table: biom.Table, meta_data: NumericMetadataC
         raise ValueError(
             "Expected a path to write out the generated and original labels and metadata!"
         )
-    with tempfile.TemporaryDirectory() as tmp:
+    tmp = tempfile.mkdtemp()
+    try:
         sG = SampleGenerator(seed_num=seed_num, logger=None, generate_strategy=generate_strategy, tmp_dir=tmp,
                              xgen=xgen, n_beta=n_beta, n_binom=n_binom, var_method=var_method, stat_method=stat_method,
                              prior_weight=prior_weight,
@@ -112,14 +126,18 @@ def tada(phylogeny: NewickFormat, table: biom.Table, meta_data: NumericMetadataC
 
         concat_biom = orig_biom
         concat_biom = concat_biom.merge(augm_biom)
+    finally:
+        print("Hi")
+        #shutil.rmtree(tmp)
 
     return pruned_phylogeny, concat_biom
 
 
-def prune_features_from_phylogeny(table: biom.Table, phylogeny: NewickFormat, out_log_fp: Str = None) -> skbio.TreeNode:
-    log_fp = tempfile.mktemp()
+def prune_features_from_phylogeny(table: biom.Table, phylogeny: skbio.TreeNode) -> skbio.TreeNode:
     print('Will prune the phylogeny')
-    tree = TreeNode.read(str(phylogeny))
+    # tree = TreeNode.read(str(phylogeny))
+    tree = phylogeny
+    table = _map_observations(table)
     obs = table.ids('observation')
     tip_names_set = set([x.name for x in tree.tips()])
     to_delete_names = tip_names_set - set(obs)
@@ -153,8 +171,6 @@ def prune_features_from_phylogeny(table: biom.Table, phylogeny: NewickFormat, ou
         print("The set of features in the phylogeny and the table are the same. "
               "No feature will be pruned from the tree.")
         tree_pruned = tree
-    if log_fp:
-        shutil.copy(log_fp, out_log_fp)
     return tree_pruned
 
 
