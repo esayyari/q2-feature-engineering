@@ -5,6 +5,7 @@
 #
 # The full license is in the file LICENSE, distributed with this software.
 # ----------------------------------------------------------------------------
-from ._tada import tada
+from ._treeCluster import tree_cluster
 __version__ = "1.0"
-__all__ = ['tada']
+
+__all__ = ['tree_cluster']

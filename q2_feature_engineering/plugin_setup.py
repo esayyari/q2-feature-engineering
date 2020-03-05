@@ -13,9 +13,10 @@ import re
 import ast
 import os
 from ._tada import tada, prune_features_from_phylogeny
-from q2_types.feature_data import FeatureData, Sequence
+from q2_types.feature_data import FeatureData, Sequence, Taxonomy
 from ._tada._data_preprocess import cluster_features, reorder_feature_table
 from ._smote.ML_over_sampling import synthetic_over_sampling
+from ._TreeCluster._treeCluster import tree_cluster
 from ._smote.ML_under_sampling import synthetic_under_sampling
 
 citations = Citations.load('citations.bib', package='q2_feature_engineering')
@@ -329,5 +330,47 @@ plugin.methods.register_function(
     name="Tool to prune a phylogeny given the feature table",
     description="Tool to prune a phylogeny using the features present in the feature table. ",
     citations=[],
+    deprecated=False
+)
+
+_inputs = {'phylogeny_fp': Phylogeny[Rooted],
+           'table': FeatureTable[Frequency]}
+
+_input_descriptions = {'phylogeny_fp': 'The tree with inserted feature data',
+                       'table': 'The count table'}
+
+
+_outputs = [('clustered_phylogeny', Phylogeny[Rooted]),
+            ('clusters_definitions', FeatureData[Taxonomy]),
+            ('clustered_table', FeatureTable[Frequency])]
+
+
+_output_descriptions = {'clustered_phylogeny': 'The tree with leaves defined based on the cluster definitions',
+                        'clusters_definitions': 'Cluster definition',
+                        'clustered_table': 'The count table defined based on the cluster definitions'}
+
+_parameters = {'method': Str,
+               'threshold': Float,
+               'threshold_free': Str}
+
+_parameter_descriptions = {'method': 'The method used for clustering leaves. Default is max_clade',
+                           'threshold': 'The threshold used for clustering leaves. Default is 0',
+                           'threshold_free': 'To use TreeCluster in the threshold free mode set it as argmax_clusters.'
+                                             'The default is None'}
+
+
+plugin.methods.register_function(
+    function=tree_cluster,
+    inputs=_inputs,
+    outputs=_outputs,
+    parameters=_parameters,
+    parameter_descriptions=_parameter_descriptions,
+    input_descriptions=_input_descriptions,
+    output_descriptions=_output_descriptions,
+    name="TreeCluster",
+    description="TreeCluster is a tool that, given a tree T (Newick format) and a distance threshold t, "
+                "finds the minimum number of clusters of the leaves of T such that some user-specified "
+                "constraint is met in each cluster. ",
+    citations=[citations['TreeCluster']],
     deprecated=False
 )
