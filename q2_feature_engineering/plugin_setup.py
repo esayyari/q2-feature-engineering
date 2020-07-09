@@ -6,7 +6,8 @@
 # The full license is in the file LICENSE, distributed with this software.
 # ----------------------------------------------------------------------------
 
-from qiime2.plugin import (Plugin, Str, Int, Bool, Float, Citations, MetadataColumn, Metadata, Numeric, Categorical)
+from qiime2.plugin import (Plugin, Str, Int, Bool, Float, Citations,
+                           MetadataColumn, Numeric, Categorical)
 from q2_types.feature_table import (FeatureTable, Frequency)
 from q2_types.tree import Phylogeny, Rooted
 import re
@@ -18,6 +19,7 @@ from ._tada._data_preprocess import cluster_features, reorder_feature_table
 from ._smote.ML_over_sampling import synthetic_over_sampling
 from ._TreeCluster._treeCluster import tree_cluster
 from ._smote.ML_under_sampling import synthetic_under_sampling
+from ._CountVectors._countVectors import count_vectors
 
 citations = Citations.load('citations.bib', package='q2_feature_engineering')
 
@@ -374,3 +376,42 @@ plugin.methods.register_function(
     citations=[citations['TreeCluster']],
     deprecated=False
 )
+
+
+_inputs = {'phylogeny': Phylogeny[Rooted],
+           'table': FeatureTable[Frequency]}
+
+_input_descriptions = {'phylogeny': 'The tree with inserted feature data',
+                       'table': 'The count table'}
+
+
+_outputs = [('count_vector_table', FeatureTable[Frequency])]
+
+
+_output_descriptions = {'count_vector_table': 'The count table defined based '
+                                              'on the cluster definitions'}
+
+_parameters = {'method': Str}
+
+_parameter_descriptions = {'method': 'The method used for calculating '
+                                     'count vectors. Options are '
+                                     'weighted_unifrac or unweighted_unifrac. '
+                                     'The default is weighted_unifrac'}
+
+
+plugin.methods.register_function(
+    function=count_vectors,
+    inputs=_inputs,
+    outputs=_outputs,
+    parameters=_parameters,
+    parameter_descriptions=_parameter_descriptions,
+    input_descriptions=_input_descriptions,
+    output_descriptions=_output_descriptions,
+    name="CountVectors",
+    description="This plugin is to extract weighted and unweighted count "
+                "vectors using a phylogenetic tree ",
+    citations=[citations['FastUniFrac']],
+    deprecated=False
+)
+
+

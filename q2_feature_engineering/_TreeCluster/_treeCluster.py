@@ -633,9 +633,9 @@ def check_mapping(final_data, table, new_data, mapping, map_matrix):
         print("The number of features in the mapped and original tables are inconsistent!")
         print(final_data.shape[0], new_data.shape[0] + (mapping.Taxon == -1).sum())
         flag = True
-    if not final_data.sum() == table.matrix_data.sum():
+    if not np.abs(final_data.sum() - table.matrix_data.sum())/final_data.sum() < 1e-10:
         print("The sum of all faetures in the original table and mapped one are not the same!")
-        print(final_data.sum(), table.matrix_data.sum())
+        print(final_data.sum(), table.matrix_data.sum(), np.abs(final_data.sum() - table.matrix_data.sum())/final_data.sum())
         flag = True
     for i in range(new_data.shape[0]):
         check.append(set(mapping.iloc[np.where(map_matrix[i,:])].Taxon.values) == set([i+1]))
