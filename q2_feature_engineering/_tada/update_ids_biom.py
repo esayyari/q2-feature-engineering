@@ -12,6 +12,7 @@ frag_fp = sys.argv[2]
 
 table = biom.load_table(biom_fp)
 
+
 def read_fasta(fasta_fp):
 	with open(fasta_fp,'r') as f:
 		seq_lns = f.readlines()
@@ -23,6 +24,7 @@ def read_fasta(fasta_fp):
 			else:
 				seq_dct[sp_name] = seq_ln.strip()
 	return seq_dct
+
 
 def inv_seq_dictionary(seq_dct):
 	mapping = dict()

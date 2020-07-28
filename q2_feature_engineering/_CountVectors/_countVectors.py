@@ -31,7 +31,6 @@ def rename_otus(tree_index):
 
 def prune_features_from_phylogeny(table: biom.Table,
                                   phylogeny: skbio.TreeNode) -> skbio.TreeNode:
-    log_fp = tempfile.mktemp()
     print('Will prune the phylogeny')
     tree = phylogeny
     obs = table.ids('observation')

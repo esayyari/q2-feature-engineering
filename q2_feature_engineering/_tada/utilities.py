@@ -7,11 +7,11 @@
 # ----------------------------------------------------------------------------
 
 import tarfile
-import itertools
 import os
 import numpy as np
 import shutil
 from heapq import nlargest
+
 
 def isfloat(x):
 	try:
@@ -21,6 +21,7 @@ def isfloat(x):
 	else:
 		return True
 
+
 def isint(x):
 	try:
 		a = float(x)
@@ -29,6 +30,7 @@ def isint(x):
 		return False
 	else:
 		return a == b
+
 
 def logp(x):
 	try:
@@ -88,7 +90,6 @@ def return_instance(num):
 			return None
 
 
-
 def map_names(y_true,y_pred,maplabels):
 	y_true_labeled = ["" for _ in range(len(y_true))]
 	y_pred_labeled = ["" for _ in range(len(y_pred))]
@@ -120,10 +121,12 @@ def uniqueCut(value, thr):
 		return None
 	return len(np.unique(value)) / len(value) >= thr
 
+
 def varCut(x, thr):
 	if thr is None:
 		return None
 	return np.var(x)>thr
+
 
 def nearZeroVar(x, ratio, thr, var_thr):
 	conds = [uniqueCut(x, thr), freqCut(x, ratio), varCut(x, var_thr)]
