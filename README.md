@@ -30,8 +30,8 @@ Next clone this [github](git@github.com:tada-alg/TADA.git) repository somewhere 
 
 ```
 cd [Any directory you wish to install TADA]
-git clone git@github.com:tada-alg/TADA.git
-cd TADA
+git clone https://github.com/ucsd-cmi/q2-feature-engineering.git
+cd q2-feature-engineering
 ```
 
 You are now ready to install the package:
